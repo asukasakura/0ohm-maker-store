@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: widget, plugin, woocommerce, search, product search, woocommerce search, ajax search, live search, custom search, ajax, shortcode, better search, relevance search, relevant search, search by sku, search plugin, shop, store, wordpress search, wp ajax search, wp search, wp search plugin, sidebar, ecommerce, merketing, products, category search, instant-search, search highlight, woocommerce advanced search, woocommerce live search, WooCommerce Plugin, woocommerce product search
 Requires at least: 4.0
 Tested up to: 5.9
-Stable tag: 2.46
+Stable tag: 2.52
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -167,7 +167,43 @@ Yep. This plugin is always compatible with the latest version of Woocommerce?
 
 == Changelog ==
 
-= 2.45 ( 2022-01-26 ) =
+= 2.52 ( 2022-04-11 ) =
+* Update - Search results styles
+* Update - Product description scrapper for search results
+* Fix - Remove markup for search form input title
+
+= 2.51 ( 2022-03-28 ) =
+* Update - Hooks for index table products sync
+* Fix - Search results page filters for default WooCommerce filter widgets
+* Fix - Astra theme integration. Bug with search form close button
+
+= 2.50 ( 2022-03-22 ) =
+* Update - Tested with WC 6.3
+* Update - Integration with Astra theme
+* Dev - Add aws_search_data_parameters filter
+
+= 2.49 ( 2022-03-07 ) =
+* Update - Admin notices
+* Fix - WCFM - WooCommerce Multivendor Marketplace plugin integration. Change store link
+* Fix - Terms scrapping for index table
+* Dev - Add aws_search_pre_filter_single_product filter
+* Dev - Make get_products method public
+
+= 2.48 ( 2022-02-21 ) =
+* Add - New admin notices about integrations
+* Update - Tested with WC 6.2
+* Update - Integration for Woodmart theme
+* Update - Support for WCFM - WooCommerce Multivendor Marketplace plugin
+* Dev - Add aws_seamless_search_form_filter filter
+
+= 2.47 ( 2022-02-07 ) =
+* Update - Do not close AJAX results block when clicking on results item
+* Update - Markup for AJAX search results
+* Update - Styles for admin page welcome message
+* Update - Support for WooCommerce Product Filter by WooBeWoo
+* Fix - Bug with admin page scripts loader
+
+= 2.46 ( 2022-01-26 ) =
 * Update - Divi builder support. Index content from long description fields
 * Fix - Bug with Divi visual builder that trigger error on save
 

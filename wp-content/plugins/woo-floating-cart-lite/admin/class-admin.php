@@ -72,6 +72,12 @@ class XT_Woo_Floating_Cart_Admin {
 		);
 
         $sections[] = array(
+            'id'    => 'colors',
+            'title' => esc_html__( 'Global Colors', 'woo-floating-cart' ),
+            'icon'  => 'dashicons-color-picker'
+        );
+
+        $sections[] = array(
             'id'    => 'cart',
             'title' => esc_html__( 'Cart Settings', 'woo-floating-cart' ),
             'icon'  => 'dashicons-list-view'
@@ -87,12 +93,6 @@ class XT_Woo_Floating_Cart_Admin {
 			'id'    => 'header',
 			'title' => esc_html__( 'Cart Header', 'woo-floating-cart' ),
 			'icon'  => 'dashicons-arrow-up-alt2'
-		);
-
-		$sections[] = array(
-			'id'    => 'body',
-			'title' => esc_html__( 'Cart Body', 'woo-floating-cart' ),
-			'icon'  => 'dashicons-feedback'
 		);
 
 		$sections[] = array(
@@ -114,6 +114,18 @@ class XT_Woo_Floating_Cart_Admin {
         );
 
         $sections[] = array(
+            'id'    => 'totals',
+            'title' => esc_html__( 'Cart Totals', 'woo-floating-cart' ),
+            'icon'  => 'dashicons-editor-ul'
+        );
+
+        $sections[] = array(
+            'id'    => 'checkout',
+            'title' => esc_html__( 'Checkout Form', 'woo-floating-cart' ),
+            'icon'  => 'dashicons-migrate'
+        );
+
+        $sections[] = array(
             'id'    => 'sp',
             'title' => esc_html__( 'Suggested Products', 'woo-floating-cart' ),
             'icon'  => 'dashicons-randomize'
@@ -132,6 +144,12 @@ class XT_Woo_Floating_Cart_Admin {
         );
 
         $sections[] = array(
+            'id'    => 'notices',
+            'title' => esc_html__( 'Cart Notices', 'woo-floating-cart' ),
+            'icon'  => 'dashicons-info'
+        );
+
+        $sections[] = array(
             'id'    => 'visibility',
             'title' => esc_html__( 'Visibility', 'woo-floating-cart' ),
             'icon'  => 'dashicons-visibility'
@@ -143,11 +161,11 @@ class XT_Woo_Floating_Cart_Admin {
             'icon'  => 'dashicons-editor-bold'
         );
 
-		$sections[] = array(
-			'id'    => 'extras',
-			'title' => esc_html__( 'Cart Extras', 'woo-floating-cart' ),
-			'icon'  => 'dashicons-plus'
-		);
+        $sections[] = array(
+            'id'    => 'extras',
+            'title' => esc_html__( 'Cart Extras', 'woo-floating-cart' ),
+            'icon'  => 'dashicons-plus'
+        );
 
         $sections[] = array(
             'id'    => 'api',
@@ -161,18 +179,21 @@ class XT_Woo_Floating_Cart_Admin {
 	public function customizer_fields( $fields, XT_Framework_Customizer $customizer ) {
 
 		require $this->core->plugin_path('admin/customizer/fields', 'general.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'colors.php');
         require $this->core->plugin_path('admin/customizer/fields', 'cart.php');
         require $this->core->plugin_path('admin/customizer/fields', 'trigger.php');
         require $this->core->plugin_path('admin/customizer/fields', 'header.php');
-		require $this->core->plugin_path('admin/customizer/fields', 'body.php');
 		require $this->core->plugin_path('admin/customizer/fields', 'product.php');
 		require $this->core->plugin_path('admin/customizer/fields', 'footer.php');
-        require $this->core->plugin_path('admin/customizer/fields', 'coupons.php');
-        require $this->core->plugin_path('admin/customizer/fields', 'sp.php');
-		require $this->core->plugin_path('admin/customizer/fields', 'menu-item.php');
-		require $this->core->plugin_path('admin/customizer/fields', 'shortcode.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'notices.php');
         require $this->core->plugin_path('admin/customizer/fields', 'visibility.php');
         require $this->core->plugin_path('admin/customizer/fields', 'typography.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'coupons.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'totals.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'checkout.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'sp.php');
+        require $this->core->plugin_path('admin/customizer/fields', 'menu-item.php');
+		require $this->core->plugin_path('admin/customizer/fields', 'shortcode.php');
         require $this->core->plugin_path('admin/customizer/fields', 'extras.php');
 		require $this->core->plugin_path('admin/customizer/fields', 'api.php');
 

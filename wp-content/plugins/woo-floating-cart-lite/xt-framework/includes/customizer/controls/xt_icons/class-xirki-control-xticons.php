@@ -431,6 +431,18 @@ if ( ! class_exists( 'Xirki_Control_XTFW_Icons' ) && class_exists( 'Xirki_Contro
                     'xt_icon-trash2' => 'xt_icon-trash2',
                     'xt_icon-trash-2' => 'xt_icon-trash-2',
                     'xt_icon-trash1' => 'xt_icon-trash1',
+                ),
+                'error' => array(
+                    'xt_icon-error_outline' => 'xt_icon-error_outline',
+                    'xt_icon-error' => 'xt_icon-error',
+                ),
+                'success' => array(
+                    'xt_icon-check_circle_outline' => 'xt_icon-check_circle_outline',
+                    'xt_icon-check_circle' => 'xt_icon-check_circle',
+                ),
+                'info' => array(
+                    'xt_icon-info_outline' => 'xt_icon-info_outline',
+                    'xt_icon-info' => 'xt_icon-info',
                 )
 			);
 

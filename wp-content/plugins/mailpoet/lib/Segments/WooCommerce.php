@@ -127,11 +127,14 @@ class WooCommerce {
           $data['last_name'] = $wpUser->last_name; // phpcs:ignore Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps
         }
         $subscriber = $this->subscriberSaveController->createOrUpdate($data, $subscriber);
-        // add subscriber to the WooCommerce Customers segment
-        $this->subscriberSegmentRepository->subscribeToSegments(
-          $subscriber,
-          [$wcSegment]
-        );
+        // add subscriber to the WooCommerce Customers segment when relation doesn't exist
+        $subscriberSegment = $this->subscriberSegmentRepository->findOneBy(['subscriber' => $subscriber, 'segment' => $wcSegment]);
+        if (!$subscriberSegment) {
+          $this->subscriberSegmentRepository->subscribeToSegments(
+            $subscriber,
+            [$wcSegment]
+          );
+        }
         break;
     }
 
@@ -306,13 +309,21 @@ class WooCommerce {
     $now = (Carbon::createFromTimestamp($this->wp->currentTime('timestamp')))->format('Y-m-d H:i:s');
     $source = Source::WOOCOMMERCE_USER;
     foreach ($emails as $email) {
-      $subscribersValues[] = "(1, '{$email}', '{$status}', '{$now}', '{$now}', '{$source}')";
+      $email = strval($this->connection->quote($email));
+      $subscribersValues[] = "(1, {$email}, '{$status}', '{$now}', '{$now}', '{$source}')";
     }
 
+    // Update existing subscribers
+    $this->connection->executeQuery('
+      UPDATE ' . $subscribersTable . ' mps
+      SET mps.is_woocommerce_user = 1
+      WHERE mps.email IN (:emails)
+    ', ['emails' => $emails], ['emails' => Connection::PARAM_STR_ARRAY]);
+
+    // Insert new subscribers
     $this->connection->executeQuery('
       INSERT IGNORE INTO ' . $subscribersTable . ' (`is_woocommerce_user`, `email`, `status`, `created_at`, `last_subscribed_at`, `source`) VALUES
       ' . implode(',', $subscribersValues) . '
-      ON DUPLICATE KEY UPDATE is_woocommerce_user = 1
     ');
 
     return count($emails);
@@ -485,6 +496,7 @@ class WooCommerce {
     if ($this->needsCollationChange()) {
       $collation = "COLLATE $this->mailpoetEmailCollation";
     }
+
     $this->connection->executeQuery("
       CREATE TEMPORARY TABLE {$tmpTableName}
         (`email` varchar(150) NOT NULL, UNIQUE(`email`)) {$collation}

@@ -1,34 +1,39 @@
 /**
  * External dependencies
  */
-import classnames from 'classnames';
-import { __, _n, sprintf } from '@wordpress/i18n';
-import {
-	RawHTML,
-	useState,
-	useEffect,
-	useCallback,
-	unmountComponentAtNode,
-} from '@wordpress/element';
-import {
-	renderBlock,
-	translateJQueryEventToNative,
-} from '@woocommerce/base-utils';
-import { useStoreCart } from '@woocommerce/base-context/hooks';
+import { renderParentBlock } from '@woocommerce/atomic-utils';
 import Drawer from '@woocommerce/base-components/drawer';
+import { useStoreCart } from '@woocommerce/base-context/hooks';
+import { translateJQueryEventToNative } from '@woocommerce/base-utils';
+import { getRegisteredBlockComponents } from '@woocommerce/blocks-registry';
 import {
 	formatPrice,
 	getCurrencyFromPriceResponse,
 } from '@woocommerce/price-format';
 import { getSettingWithCoercion } from '@woocommerce/settings';
-import { isString, isBoolean } from '@woocommerce/types';
-
+import {
+	CartResponseTotals,
+	isBoolean,
+	isString,
+	isCartResponseTotals,
+	isNumber,
+} from '@woocommerce/types';
+import {
+	unmountComponentAtNode,
+	useCallback,
+	useEffect,
+	useRef,
+	useState,
+} from '@wordpress/element';
+import { sprintf, _n } from '@wordpress/i18n';
+import classnames from 'classnames';
 /**
  * Internal dependencies
  */
 import QuantityBadge from './quantity-badge';
-import MiniCartContentsBlock from '../mini-cart-contents/block';
+import { MiniCartContentsBlock } from '../mini-cart-contents/block';
 import './style.scss';
+import { blockName } from '../mini-cart-contents/attributes';
 
 interface Props {
 	isInitiallyOpen?: boolean;
@@ -44,7 +49,20 @@ const MiniCartBlock = ( {
 	style,
 	contents = '',
 }: Props ): JSX.Element => {
-	const { cartItemsCount, cartIsLoading, cartTotals } = useStoreCart();
+	const {
+		cartItemsCount: cartItemsCountFromApi,
+		cartIsLoading,
+		cartTotals: cartTotalsFromApi,
+	} = useStoreCart();
+
+	const isFirstLoadingCompleted = useRef( cartIsLoading );
+
+	useEffect( () => {
+		if ( isFirstLoadingCompleted.current && ! cartIsLoading ) {
+			isFirstLoadingCompleted.current = false;
+		}
+	}, [ cartIsLoading, isFirstLoadingCompleted ] );
+
 	const [ isOpen, setIsOpen ] = useState< boolean >( isInitiallyOpen );
 	// We already rendered the HTML drawer placeholder, so we want to skip the
 	// slide in animation.
@@ -62,15 +80,17 @@ const MiniCartBlock = ( {
 	useEffect( () => {
 		if ( contentsNode instanceof Element ) {
 			const container = contentsNode.querySelector(
-				'.wc-block-mini-cart-contents'
+				'.wp-block-woocommerce-mini-cart-contents'
 			);
 			if ( ! container ) {
 				return;
 			}
 			if ( isOpen ) {
-				renderBlock( {
+				renderParentBlock( {
 					Block: MiniCartContentsBlock,
-					container,
+					blockName,
+					selector: '.wp-block-woocommerce-mini-cart-contents',
+					blockMap: getRegisteredBlockComponents( blockName ),
 				} );
 			}
 		}
@@ -78,7 +98,7 @@ const MiniCartBlock = ( {
 		return () => {
 			if ( contentsNode instanceof Element && isOpen ) {
 				const container = contentsNode.querySelector(
-					'.wc-block-mini-cart-contents'
+					'.wp-block-woocommerce-mini-cart-contents'
 				);
 				if ( container ) {
 					unmountComponentAtNode( container );
@@ -120,7 +140,28 @@ const MiniCartBlock = ( {
 		isBoolean
 	);
 
+	const preFetchedCartTotals = getSettingWithCoercion< CartResponseTotals | null >(
+		'cartTotals',
+		null,
+		isCartResponseTotals
+	);
+
+	const preFetchedCartItemsCount = getSettingWithCoercion< number >(
+		'cartItemsCount',
+		0,
+		isNumber
+	);
+
 	const taxLabel = getSettingWithCoercion( 'taxLabel', '', isString );
+
+	const cartTotals =
+		! isFirstLoadingCompleted.current || preFetchedCartTotals === null
+			? cartTotalsFromApi
+			: preFetchedCartTotals;
+
+	const cartItemsCount = ! isFirstLoadingCompleted.current
+		? cartItemsCountFromApi
+		: preFetchedCartItemsCount;
 
 	const subTotal = showIncludingTax
 		? parseInt( cartTotals.total_items, 10 ) +
@@ -182,29 +223,18 @@ const MiniCartBlock = ( {
 						'is-loading': cartIsLoading,
 					}
 				) }
-				title={
-					cartIsLoading
-						? __( 'Your cart', 'woo-gutenberg-products-block' )
-						: sprintf(
-								/* translators: %d is the count of items in the cart. */
-								_n(
-									'Your cart (%d item)',
-									'Your cart (%d items)',
-									cartItemsCount,
-									'woo-gutenberg-products-block'
-								),
-								cartItemsCount
-						  )
-				}
+				title=""
 				isOpen={ isOpen }
 				onClose={ () => {
 					setIsOpen( false );
 				} }
 				slideIn={ ! skipSlideIn }
 			>
-				<div ref={ contentsRef }>
-					<RawHTML>{ contents }</RawHTML>
-				</div>
+				<div
+					className="wc-block-mini-cart__template-part"
+					ref={ contentsRef }
+					dangerouslySetInnerHTML={ { __html: contents } }
+				></div>
 			</Drawer>
 		</>
 	);

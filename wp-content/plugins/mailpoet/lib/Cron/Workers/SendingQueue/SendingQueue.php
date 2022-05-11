@@ -84,14 +84,14 @@ class SendingQueue {
     WPFunctions $wp,
     Links $links,
     ScheduledTasksRepository $scheduledTasksRepository,
-    $mailerTask = false,
+    MailerTask $mailerTask,
     $newsletterTask = false
   ) {
     $this->errorHandler = $errorHandler;
     $this->throttlingHandler = $throttlingHandler;
     $this->statsNotificationsScheduler = $statsNotificationsScheduler;
     $this->subscribersFinder = $subscriberFinder;
-    $this->mailerTask = ($mailerTask) ? $mailerTask : new MailerTask();
+    $this->mailerTask = $mailerTask;
     $this->newsletterTask = ($newsletterTask) ? $newsletterTask : new NewsletterTask();
     $this->segmentsRepository = $segmentsRepository;
     $this->mailerMetaInfo = new MetaInfo;
@@ -125,7 +125,7 @@ class SendingQueue {
 
       try {
         ScheduledTaskModel::touchAllByIds([$queue->taskId]);
-        $this->processSending($queue, $timer);
+        $this->processSending($queue, (int)$timer);
       } catch (\Exception $e) {
         $this->stopProgress($task);
         throw $e;
@@ -136,7 +136,7 @@ class SendingQueue {
   }
 
   private function processSending(SendingTask $queue, int $timer): void {
-    $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+    $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
       'sending queue processing',
       ['task_id' => $queue->taskId]
     );
@@ -147,7 +147,7 @@ class SendingQueue {
     // pre-process newsletter (render, replace shortcodes/links, etc.)
     $newsletter = $this->newsletterTask->preProcessNewsletter($newsletter, $queue);
     if (!$newsletter) {
-      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
         'delete task in sending queue',
         ['task_id' => $queue->taskId]
       );
@@ -167,7 +167,7 @@ class SendingQueue {
     $newsletterSegmentsIds = $this->newsletterTask->getNewsletterSegments($newsletter);
     // Pause task in case some of related segments was deleted or trashed
     if ($newsletterSegmentsIds && !$this->checkDeletedSegments($newsletterSegmentsIds)) {
-      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
         'pause task in sending queue due deleted or trashed segment',
         ['task_id' => $queue->taskId]
       );
@@ -181,14 +181,14 @@ class SendingQueue {
     $subscriberBatches = new BatchIterator($queue->taskId, $this->getBatchSize());
     /** @var int[] $subscribersToProcessIds - it's required for PHPStan */
     foreach ($subscriberBatches as $subscribersToProcessIds) {
-      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
         'subscriber batch processing',
         ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId, 'subscriber_batch_count' => count($subscribersToProcessIds)]
       );
       if (!empty($newsletterSegmentsIds[0])) {
         // Check that subscribers are in segments
         $foundSubscribersIds = $this->subscribersFinder->findSubscribersInSegments($subscribersToProcessIds, $newsletterSegmentsIds);
-        $foundSubscribers = SubscriberModel::whereIn('id', $subscribersToProcessIds)
+        $foundSubscribers = empty($foundSubscribersIds) ? [] : SubscriberModel::whereIn('id', $foundSubscribersIds)
           ->whereNull('deleted_at')
           ->findMany();
       } else {
@@ -216,7 +216,7 @@ class SendingQueue {
           continue;
         }
       }
-      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
         'before queue chunk processing',
         ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId, 'found_subscribers_count' => count($foundSubscribers)]
       );
@@ -230,12 +230,12 @@ class SendingQueue {
         $foundSubscribers,
         $timer
       );
-      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+      $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
         'after queue chunk processing',
         ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId]
       );
       if ($queue->status === ScheduledTaskModel::STATUS_COMPLETED) {
-        $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->addInfo(
+        $this->loggerFactory->getLogger(LoggerFactory::TOPIC_NEWSLETTERS)->info(
           'completed newsletter sending',
           ['newsletter_id' => $newsletter->id, 'task_id' => $queue->taskId]
         );
@@ -298,6 +298,7 @@ class SendingQueue {
         $preparedSubscribersIds = [];
         $unsubscribeUrls = [];
         $statistics = [];
+        $metas = [];
       }
     }
     if ($processingMethod === 'bulk') {

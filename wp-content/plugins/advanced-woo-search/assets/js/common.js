@@ -168,8 +168,9 @@ AwsHooks.filters = AwsHooks.filters || {};
 
                                 resultNum++;
 
-                                html += '<li class="aws_result_item aws_result_tag">';
-                                    html += '<a class="aws_result_link" href="' + taxitem.link + '" >';
+                                html += '<li class="aws_result_item aws_result_tag" style="position:relative;">';
+                                    html += '<div class="aws_result_link">';
+                                        html += '<a class="aws_result_link_top" href="' + taxitem.link + '">' + taxitem.name + '</a>';
                                         html += '<span class="aws_result_content">';
                                             html += '<span class="aws_result_title">';
                                                 html += taxitem.name;
@@ -181,7 +182,7 @@ AwsHooks.filters = AwsHooks.filters || {};
                                                 html += '<span class="aws_result_excerpt">' + taxitem.excerpt + '</span>';
                                             }
                                         html += '</span>';
-                                    html += '</a>';
+                                    html += '</div>';
                                 html += '</li>';
 
                             });
@@ -197,8 +198,10 @@ AwsHooks.filters = AwsHooks.filters || {};
 
                         resultNum++;
 
-                        html += '<li class="aws_result_item">';
-                        html += '<a class="aws_result_link" href="' + result.link + '" >';
+                        html += '<li class="aws_result_item" style="position:relative;">';
+                        html += '<div class="aws_result_link">';
+
+                        html += '<a class="aws_result_link_top" href="' + result.link + '">' + result.title.replace(/(<[\s\S]*>)/gm, '') + '</a>';
 
                         if ( result.image ) {
                             html += '<span class="aws_result_image">';
@@ -242,7 +245,7 @@ AwsHooks.filters = AwsHooks.filters || {};
                             html += '</span>';
                         }
 
-                        html += '</a>';
+                        html += '</div>';
                         html += '</li>';
 
                     });
@@ -316,7 +319,10 @@ AwsHooks.filters = AwsHooks.filters || {};
             },
 
             hideResults: function( event ) {
-                if ( ! $(event.target).closest( ".aws-container" ).length ) {
+                if ( ! $(event.target).closest( ".aws-container" ).length
+                    && ! $(event.target).closest( self ).length
+                    && ! $(event.target).closest( d.resultBlock ).length
+                ) {
                     methods.resultsHide();
                 }
             },

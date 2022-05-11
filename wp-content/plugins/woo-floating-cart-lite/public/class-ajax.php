@@ -17,6 +17,14 @@ if ( !defined( 'WPINC' ) ) {
 class XT_Woo_Floating_Cart_Ajax
 {
     /**
+     * Core class reference.
+     *
+     * @since    1.0.0
+     * @access   private
+     * @var      XT_Woo_Floating_Cart $core
+     */
+    private  $core ;
+    /**
      * Var that holds the cart notice
      *
      * @since    1.0.0
@@ -36,11 +44,8 @@ class XT_Woo_Floating_Cart_Ajax
         $this->core = $core;
         // Add WC Ajax Events
         add_filter( $this->core->plugin_prefix( 'wc_ajax_add_events' ), array( $this, 'ajax_add_events' ), 1 );
-        // Remove WC Ajax Events
-        add_filter( $this->core->plugin_prefix( 'wc_ajax_remove_events' ), array( $this, 'ajax_remove_events' ), 1 );
         // Set Fragments
         add_filter( 'woocommerce_add_to_cart_fragments', array( $this, 'cart_fragments' ), 1 );
-        add_filter( 'woocommerce_update_order_review_fragments', array( $this, 'cart_fragments' ), 1 );
         // Remove / Restore hooks
         add_filter(
             'woocommerce_remove_cart_item',
@@ -86,21 +91,6 @@ class XT_Woo_Floating_Cart_Ajax
         return $ajax_events;
     }
     
-    /**
-     * Remove ajax events
-     */
-    public function ajax_remove_events( $ajax_events )
-    {
-        if ( $this->core->access_manager()->can_use_premium_code__premium_only() && !$this->core->frontend()->is_checkout_page() ) {
-            $ajax_events[] = array(
-                'function' => 'update_order_review',
-                'callback' => array( WC_AJAX::class, 'update_order_review' ),
-                'nopriv'   => true,
-            );
-        }
-        return $ajax_events;
-    }
-    
     public function set_notice( $notice, $type = 'success' )
     {
         $this->notice = '<span class="xt_woofc-notice xt_woofc-notice-' . esc_attr( $type ) . '" data-type="' . esc_attr( $type ) . '">' . $notice . '</span>';
@@ -124,19 +114,12 @@ class XT_Woo_Floating_Cart_Ajax
         $frontend->define_cart_constant();
         WC()->cart->calculate_totals();
         $type = ( !empty($_POST['type']) ? sanitize_text_field( $_POST['type'] ) : null );
-        $add_to_cart = !empty($_GET['wc-ajax']) && $_GET['wc-ajax'] === 'add_to_cart';
         $single_add_to_cart = !empty($_GET['wc-ajax']) && $_GET['wc-ajax'] === 'xt_atc_single';
-        $update_order_review = !empty($_GET['wc-ajax']) && $_GET['wc-ajax'] === 'update_order_review';
-        $get_refreshed_fragments = !empty($_GET['wc-ajax']) && $_GET['wc-ajax'] === 'get_refreshed_fragments';
-        $customized = !empty($_POST['customized']);
-        if ( !empty($customized) && $get_refreshed_fragments ) {
-            return $fragments;
-        }
         $add_to_cart_module = $this->core->modules()->get( 'add-to-cart' );
         if ( $single_add_to_cart && $add_to_cart_module->customizer()->get_option_bool( 'single_refresh_fragments', true ) ) {
             return $fragments;
         }
-        $show_notices = !$update_order_review && !in_array( $type, array( 'totals', 'refresh' ) );
+        $show_notices = !in_array( $type, array( 'totals', 'refresh' ) );
         
         if ( $show_notices ) {
             $notice = $this->get_notice();
@@ -152,7 +135,6 @@ class XT_Woo_Floating_Cart_Ajax
         WC()->session->set( 'xt_woofc_previous_count', $count );
         $fragments['.xt_woofc-checkout span.amount'] = '<span class="amount">' . $total . '</span>';
         $fragments['.xt_woofc-count'] = '<ul class="xt_woofc-count' . $update_count_class . '"><li>' . $previous_count . '</li><li>' . $count . '</li></ul>';
-        $fragments['.xt_woofc-spinner-wrap'] = xt_woofc_spinner_html( true );
         
         if ( in_array( $type, array(
             'totals',
@@ -184,14 +166,13 @@ class XT_Woo_Floating_Cart_Ajax
             
             }
         } else {
-            
-            if ( !$update_order_review ) {
-                $list = $this->core->get_template( 'parts/cart/list', array(), true );
-                $fragments['.xt_woofc-list-wrap'] = $list;
-            }
-        
+            $list = $this->core->get_template( 'parts/cart/list', array(), true );
+            $fragments['.xt_woofc-list-wrap'] = $list;
         }
         
+        $fragments['.xt_woofc-wc-notices'] = xtfw_ob_get_clean( function () {
+            $this->core->frontend()->render_wc_notices();
+        } );
         return $fragments;
     }
     
@@ -358,92 +339,6 @@ class XT_Woo_Floating_Cart_Ajax
         WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
         $this->set_notice( esc_html__( 'Shipping info updated', 'woo-floating-cart' ) );
         WC_Ajax::get_refreshed_fragments();
-    }
-    
-    /**
-     * AJAX update order review on checkout.
-     */
-    public function update_order_review()
-    {
-        $this->core->frontend()->define_checkout_constant();
-        do_action( 'woocommerce_checkout_update_order_review', ( isset( $_POST['post_data'] ) ? wp_unslash( $_POST['post_data'] ) : '' ) );
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-        $chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods' );
-        $posted_shipping_methods = ( isset( $_POST['shipping_method'] ) ? wc_clean( wp_unslash( $_POST['shipping_method'] ) ) : array() );
-        if ( is_array( $posted_shipping_methods ) ) {
-            foreach ( $posted_shipping_methods as $i => $value ) {
-                $chosen_shipping_methods[$i] = $value;
-            }
-        }
-        WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
-        WC()->session->set( 'chosen_payment_method', ( empty($_POST['payment_method']) ? '' : wc_clean( wp_unslash( $_POST['payment_method'] ) ) ) );
-        WC()->customer->set_props( array(
-            'billing_country'   => ( isset( $_POST['country'] ) ? wc_clean( wp_unslash( $_POST['country'] ) ) : null ),
-            'billing_state'     => ( isset( $_POST['state'] ) ? wc_clean( wp_unslash( $_POST['state'] ) ) : null ),
-            'billing_postcode'  => ( isset( $_POST['postcode'] ) ? wc_clean( wp_unslash( $_POST['postcode'] ) ) : null ),
-            'billing_city'      => ( isset( $_POST['city'] ) ? wc_clean( wp_unslash( $_POST['city'] ) ) : null ),
-            'billing_address_1' => ( isset( $_POST['address'] ) ? wc_clean( wp_unslash( $_POST['address'] ) ) : null ),
-            'billing_address_2' => ( isset( $_POST['address_2'] ) ? wc_clean( wp_unslash( $_POST['address_2'] ) ) : null ),
-        ) );
-        
-        if ( wc_ship_to_billing_address_only() ) {
-            WC()->customer->set_props( array(
-                'shipping_country'   => ( isset( $_POST['country'] ) ? wc_clean( wp_unslash( $_POST['country'] ) ) : null ),
-                'shipping_state'     => ( isset( $_POST['state'] ) ? wc_clean( wp_unslash( $_POST['state'] ) ) : null ),
-                'shipping_postcode'  => ( isset( $_POST['postcode'] ) ? wc_clean( wp_unslash( $_POST['postcode'] ) ) : null ),
-                'shipping_city'      => ( isset( $_POST['city'] ) ? wc_clean( wp_unslash( $_POST['city'] ) ) : null ),
-                'shipping_address_1' => ( isset( $_POST['address'] ) ? wc_clean( wp_unslash( $_POST['address'] ) ) : null ),
-                'shipping_address_2' => ( isset( $_POST['address_2'] ) ? wc_clean( wp_unslash( $_POST['address_2'] ) ) : null ),
-            ) );
-        } else {
-            WC()->customer->set_props( array(
-                'shipping_country'   => ( isset( $_POST['s_country'] ) ? wc_clean( wp_unslash( $_POST['s_country'] ) ) : null ),
-                'shipping_state'     => ( isset( $_POST['s_state'] ) ? wc_clean( wp_unslash( $_POST['s_state'] ) ) : null ),
-                'shipping_postcode'  => ( isset( $_POST['s_postcode'] ) ? wc_clean( wp_unslash( $_POST['s_postcode'] ) ) : null ),
-                'shipping_city'      => ( isset( $_POST['s_city'] ) ? wc_clean( wp_unslash( $_POST['s_city'] ) ) : null ),
-                'shipping_address_1' => ( isset( $_POST['s_address'] ) ? wc_clean( wp_unslash( $_POST['s_address'] ) ) : null ),
-                'shipping_address_2' => ( isset( $_POST['s_address_2'] ) ? wc_clean( wp_unslash( $_POST['s_address_2'] ) ) : null ),
-            ) );
-        }
-        
-        
-        if ( isset( $_POST['has_full_address'] ) && wc_string_to_bool( wc_clean( wp_unslash( $_POST['has_full_address'] ) ) ) ) {
-            WC()->customer->set_calculated_shipping( true );
-        } else {
-            WC()->customer->set_calculated_shipping( false );
-        }
-        
-        WC()->customer->save();
-        // Calculate shipping before totals. This will ensure any shipping methods that affect things like taxes are chosen prior to final totals being calculated. Ref: #22708.
-        WC()->cart->calculate_shipping();
-        WC()->cart->calculate_totals();
-        // Get order review fragment.
-        ob_start();
-        woocommerce_order_review();
-        $woocommerce_order_review = ob_get_clean();
-        // Get checkout payment fragment.
-        ob_start();
-        woocommerce_checkout_payment();
-        $woocommerce_checkout_payment = ob_get_clean();
-        // Get messages if reload checkout is not true.
-        $reload_checkout = ( isset( WC()->session->reload_checkout ) ? true : false );
-        
-        if ( !$reload_checkout ) {
-            $messages = wc_print_notices( true );
-        } else {
-            $messages = '';
-        }
-        
-        unset( WC()->session->refresh_totals, WC()->session->reload_checkout );
-        wp_send_json( array(
-            'result'    => ( empty($messages) ? 'success' : 'failure' ),
-            'messages'  => $messages,
-            'reload'    => ( $reload_checkout ? 'true' : 'false' ),
-            'fragments' => apply_filters( 'woocommerce_update_order_review_fragments', array(
-            '.woocommerce-checkout-review-order-table' => $woocommerce_order_review,
-            '.woocommerce-checkout-payment'            => $woocommerce_checkout_payment,
-        ) ),
-        ) );
     }
     
     public function remove_cart_item( $cart_item_key, $cart )

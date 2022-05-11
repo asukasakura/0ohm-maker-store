@@ -712,6 +712,8 @@ abstract class XT_Framework
             );
             $this->access_manager->add_filter( 'checkout/purchaseCompleted', array( $this, 'after_purchase_js' ) );
             $this->access_manager->add_filter( 'templates/checkout.php', array( $this, 'checkout_gtm_script' ) );
+            $this->access_manager->add_filter( 'hide_freemius_powered_by', '__return_true' );
+            $this->access_manager->add_filter( 'hide_billing_and_payments_info', '__return_true' );
             $this->access_manager->add_filter( 'plugin_icon', function () {
                 return dirname( $this->plugin->file ) . '/admin/assets/images/icon.png';
             } );

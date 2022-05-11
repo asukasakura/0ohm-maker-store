@@ -50,11 +50,12 @@ class BlockRendererHelper {
       }, $errorMessages)) . ']';
     }
 
-    if ($blockId === 'segments') {
+    // Segments should be required only when form ID is not empty. That allows save form on subscription management site when any segment is not checked.
+    if ($blockId === 'segments' && $formId) {
       $rules['required'] = true;
       $rules['mincheck'] = 1;
       $rules['group'] = $blockId;
-      $rules['errors-container'] = '.mailpoet_error_' . $blockId . ($formId ? '_' . $formId : '');
+      $rules['errors-container'] = '.mailpoet_error_' . $blockId . '_' . $formId;
       $rules['required-message'] = __('Please select a list.', 'mailpoet');
     }
 
@@ -146,7 +147,7 @@ class BlockRendererHelper {
     $rules = [];
     if (isset($formSettings['fontSize'])) {
       $rules[] = 'font-size: ' . trim($formSettings['fontSize']) . 'px;';
-      $rules[] = 'line-height: ' . trim($formSettings['fontSize']) * 1.2 . 'px";';
+      $rules[] = 'line-height: ' . (float)trim($formSettings['fontSize']) * 1.2 . 'px";';
     }
     if (isset($styles['bold'])) {
       $rules[] = 'font-weight: bold;';

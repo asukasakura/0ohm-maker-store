@@ -16,6 +16,17 @@ It takes care of basic plugin hooks, admin tabs, customizer fields, plugin setti
 
 == Changelog ==
 
+#### V.2.0.7 - 23.03.2022
+- **fix**: Minor fixes
+
+#### V.2.0.6 - 03.03.2022
+- **fix**: Freemius Security Fix
+- **update**: Updated Freemius SDK to 2.4.3
+
+#### V.2.0.5 - 09.02.2021
+- **fix**: Minor fixes
+- **fix**: Deduplicate backend & frontend notices.
+
 #### V.2.0.3 - 03.01.2021
 - **css**: CSS Map fixes
 - **enhancements**: Minor Enhancements

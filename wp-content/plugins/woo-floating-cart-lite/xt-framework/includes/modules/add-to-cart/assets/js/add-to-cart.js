@@ -145,6 +145,7 @@
 
                 evt.preventDefault();
                 //evt.stopPropagation(); // had to be removed to make sure analytics plugins work
+                evt.stopImmediatePropagation(); // Might still cause issues
 
                 if(!isButtonLoading(trigger) && !isButtonDisabled(trigger) && validSingleAddToCart(form, trigger)) {
                     singleAddToCart(form, trigger);

@@ -40,6 +40,7 @@ if(!class_exists('XT_Framework_Customizer')) {
         protected $panels = array();
         protected $sections = array();
         protected $fields = array();
+        protected $section_fields_counter = array();
 
         /**
          * Class constructor
@@ -437,6 +438,18 @@ if(!class_exists('XT_Framework_Customizer')) {
                     unset( $field['id'] );
                 }
 
+                if(!isset($this->section_fields_counter[$field['section']]['all'])) {
+                    $this->section_fields_counter[$field['section']]['all'] = 0;
+                }
+                $this->section_fields_counter[$field['section']]['all']++;
+
+                if(!empty($field['type']) && $field['type'] === 'xt-premium') {
+                    if(!isset($this->section_fields_counter[$field['section']]['premium'])) {
+                        $this->section_fields_counter[$field['section']]['premium'] = 0;
+                    }
+                    $this->section_fields_counter[$field['section']]['premium']++;
+                }
+
                 Xirki::add_field( $this->config_id(), $field );
             }
 
@@ -575,17 +588,43 @@ if(!class_exists('XT_Framework_Customizer')) {
 				    continue;
 			    }
 
-			    echo '<li><a title="'.esc_html__('Open in Customizer', 'xt-framework').'" href="'.esc_url($customizer->customizer_link(null, $section['id'])).'">';
-			    if(!empty($section['icon'])) {
-                    echo '<span class="dashicons ' . esc_attr($section['icon']) . '">';
+                $lock_status = $customizer->get_section_lock_status($section['id']);
+
+			    echo '<li class="xtfw-xirki-section-'.esc_attr($lock_status).'">';
+                echo '<a title="'.esc_html__('Open in Customizer', 'xt-framework').'" href="'.esc_url($customizer->customizer_link(null, $section['id'])).'">';
+
+                if(!empty($section['icon'])) {
+                    echo '<span class="dashicons ' . esc_attr($section['icon']) . '"></span>';
                 }
-			    echo '</span> '.esc_html($section['title']).'</a></li>';
+
+			    echo esc_html($section['title']);
+
+                echo '</a>';
+                echo '</li>';
 		    }
 
 		    if(!$has_one_panel) {
 			    echo '</ul>';
 		    }
 	    }
+
+        public function get_section_lock_status($section, $customizer  = null) {
+
+            $section = $this->section_id($section);
+            $customizer = !empty($customizer) ? $customizer : $this;
+
+            $section_fields = $customizer->section_fields_counter[$section];
+
+            if(empty($section_fields['premium'])) {
+                return 'unclocked';
+            }
+
+            if($section_fields['all'] === $section_fields['premium']) {
+                return 'locked';
+            }else{
+                return 'semilocked';
+            }
+        }
 
         /**
          * Check if option exists

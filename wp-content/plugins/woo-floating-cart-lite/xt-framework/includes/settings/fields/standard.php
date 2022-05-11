@@ -37,5 +37,4 @@ $option_value = $this->get_option( $field['name'], $field['default'] );
 		<?php $this->render_field_description( $field ); // WPCS: XSS ok. ?>
 		<?php $this->render_field_after( $field ); // WPCS: XSS ok. ?>
     </td>
-    </tr>
-<?php
+</tr>

@@ -433,6 +433,31 @@ Creation date: 30/06/2020
   content: "\e907";
 }
 
+/* Info */
+.xt_icon-info_outline:before {
+  content: "\e908";
+}
+.xt_icon-info:before {
+  content: "\e909";
+}
+
+/* Success */
+.xt_icon-check_circle_outline:before {
+  content: "\e90a";
+}
+.xt_icon-check_circle:before {
+  content: "\e90b";
+}
+
+/* Error */
+.xt_icon-error_outline:before {
+  content: "\e90c";
+}
+.xt_icon-error:before {
+  content: "\e90d";
+}
+
+
 @keyframes xt_icon-spinner-animation {
   0% {
     -webkit-transform: rotate(0deg);

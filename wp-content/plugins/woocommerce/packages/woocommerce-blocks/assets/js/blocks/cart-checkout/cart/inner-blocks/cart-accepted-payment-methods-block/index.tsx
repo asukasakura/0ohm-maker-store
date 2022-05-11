@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { registerFeaturePluginBlockType } from '@woocommerce/block-settings';
-import { Icon, card } from '@woocommerce/icons';
+import { Icon, payment } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -12,8 +12,12 @@ import metadata from './block.json';
 
 registerFeaturePluginBlockType( metadata, {
 	icon: {
-		src: <Icon srcElement={ card } />,
-		foreground: '#874FB9',
+		src: (
+			<Icon
+				icon={ payment }
+				className="wc-block-editor-components-block-icon"
+			/>
+		),
 	},
 	edit: Edit,
 	save: Save,

@@ -63,9 +63,9 @@ if(!class_exists('XT_Framework_Admin_Tabs')) {
 
             if ( $this->is_admin_tabs_page() ) {
 
-                add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles'), 1 );
-                add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts'), 1 );
-                add_action( 'admin_body_class', array( $this, 'admin_body_class'), 1 );
+                add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles'), 999 );
+                add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts'), 999 );
+                add_action( 'admin_body_class', array( $this, 'admin_body_class'), 999 );
                 add_filter( 'admin_footer_text', array( $this, 'footer_text'), 999 );
                 add_filter( 'update_footer', array( $this, 'footer_version'), 999 );
             }
@@ -291,6 +291,11 @@ if(!class_exists('XT_Framework_Admin_Tabs')) {
 
             echo '</span>';
 
+
+            if (!empty($tab['flashing_badge']) && $this->show_flashing_badge($tab['flashing_badge'])) {
+                echo '<span class="nav-tab-flashing-badge"></span>';
+            }
+
             echo '</a>';
         }
 
@@ -379,7 +384,7 @@ if(!class_exists('XT_Framework_Admin_Tabs')) {
                 $tab_key = array_search( $id, array_column( $this->tabs, 'id' ) );
             }
 
-            $tab     = ( $tab_key !== false ) ? $this->tabs[ $tab_key ] : null;
+            $tab = ( $tab_key !== false ) ? $this->tabs[ $tab_key ] : null;
 
             return $tab;
         }
@@ -481,6 +486,16 @@ if(!class_exists('XT_Framework_Admin_Tabs')) {
             }
 
             return $badges_html;
+        }
+
+        public function show_flashing_badge($callable) {
+
+            if( !empty($callable)) {
+
+                return (bool)(is_callable($callable) ? $callable() : $callable);
+            }
+
+            return false;
         }
 
     }

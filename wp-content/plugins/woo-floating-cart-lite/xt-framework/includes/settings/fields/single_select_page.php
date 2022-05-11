@@ -26,15 +26,15 @@ if ( isset( $field['args'] ) ) {
 }
 
 ?>
-	<tr class="single_select_page">
-		<th scope="row" class="titledesc">
-			<?php $this->render_field_label($field); ?>
-		</th>
-		<td class="forminp">
-			<?php $this->render_field_before( $field ); // WPCS: XSS ok. ?>
-			<?php echo str_replace( ' id=', " data-placeholder='" . esc_attr__( 'Select a page&hellip;', 'xt-framework' ) . "' style='" . $field['css'] . "' class='" . $field['class'] . "' id=", wp_dropdown_pages( $args ) ); // WPCS: XSS ok. ?>
-			<?php $this->render_field_description( $field ); // WPCS: XSS ok. ?>
-			<?php $this->render_field_after( $field ); // WPCS: XSS ok. ?>
-		</td>
-	</tr>
-<?php
+<tr class="single_select_page">
+    <th scope="row" class="titledesc">
+        <?php $this->render_field_label($field); ?>
+    </th>
+    <td class="forminp">
+        <?php $this->render_field_before( $field ); // WPCS: XSS ok. ?>
+        <?php echo str_replace( ' id=', " data-placeholder='" . esc_attr__( 'Select a page&hellip;', 'xt-framework' ) . "' style='" . $field['css'] . "' class='" . $field['class'] . "' id=", wp_dropdown_pages( $args ) ); // WPCS: XSS ok. ?>
+        <?php $this->render_field_description( $field ); // WPCS: XSS ok. ?>
+        <?php $this->render_field_after( $field ); // WPCS: XSS ok. ?>
+    </td>
+</tr>
+

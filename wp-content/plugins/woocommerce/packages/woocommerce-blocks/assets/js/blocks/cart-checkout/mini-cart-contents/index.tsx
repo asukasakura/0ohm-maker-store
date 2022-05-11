@@ -2,20 +2,27 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon, cart } from '@woocommerce/icons';
+import { cart } from '@woocommerce/icons';
+import { Icon } from '@wordpress/icons';
 import { registerExperimentalBlockType } from '@woocommerce/block-settings';
 
 /**
  * Internal dependencies
  */
-import edit from './edit';
+import edit, { Save as save } from './edit';
+import { blockName } from './attributes';
+import './inner-blocks';
 
 const settings = {
 	apiVersion: 2,
 	title: __( 'Mini Cart Contents', 'woo-gutenberg-products-block' ),
 	icon: {
-		src: <Icon srcElement={ cart } />,
-		foreground: '#7f54b3',
+		src: (
+			<Icon
+				icon={ cart }
+				className="wc-block-editor-components-block-icon"
+			/>
+		),
 	},
 	category: 'woocommerce',
 	keywords: [ __( 'WooCommerce', 'woo-gutenberg-products-block' ) ],
@@ -29,8 +36,16 @@ const settings = {
 		multiple: false,
 		reusable: false,
 		inserter: false,
+		color: {
+			link: true,
+		},
 	},
 	attributes: {
+		isPreview: {
+			type: 'boolean',
+			default: false,
+			save: false,
+		},
 		lock: {
 			type: 'object',
 			default: {
@@ -44,19 +59,8 @@ const settings = {
 			isPreview: true,
 		},
 	},
-	attributes: {
-		isPreview: {
-			type: 'boolean',
-			default: false,
-			save: false,
-		},
-	},
-
 	edit,
-
-	save() {
-		return null;
-	},
+	save,
 };
 
-registerExperimentalBlockType( 'woocommerce/mini-cart-contents', settings );
+registerExperimentalBlockType( blockName, settings );

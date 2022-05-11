@@ -11,7 +11,7 @@
  * be bumped and the readme will list any important changes.
  *
  * @link       http://xplodedthemes.com
- * @since      1.8.8
+ * @since      2.6.0
  *
  * @package    XT_Woo_Floating_Cart
  * @subpackage XT_Woo_Floating_Cart/public/templates/parts
@@ -24,9 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 <div class="xt_woofc-footer">
 
-    <a href="<?php echo xt_woofc_checkout_link(); ?>" data-text="<?php echo xt_woofc_checkout_label(); ?>"
-       data-processing-text="<?php echo xt_woofc_checkout_processing_label(); ?>"
-       class="xt_woofc-checkout xt_woofc-btn">
+    <a href="<?php echo xt_woofc_checkout_link(); ?>" class="xt_woofc-checkout xt_woofc-btn">
         <em>
             <span class="xt_woofc-footer-label"><?php echo xt_woofc_checkout_label(); ?></span>
             <span class="xt_woofc-dash">-</span>

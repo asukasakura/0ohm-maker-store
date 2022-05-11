@@ -53,7 +53,6 @@ if ( ! class_exists( 'XT_Framework_Woocommerce' ) ) {
             wp_add_inline_style('xtfw-inline', '
             .xtfw-wc-product-image{
                 position: relative;
-                z-index: 2;
             }
             ');
         }

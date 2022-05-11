@@ -6,17 +6,17 @@ Author: XplodedThemes
 Author URI: https://www.xplodedthemes.com
 Tags: woocommerce cart, side cart, fly to cart, fly cart, woocommerce side cart, mini cart, floating cart, cart, ajax cart, ajax add to cart, related products, upsell, cross-sell
 Requires at least: 4.6
-Tested up to: 5.8
-Stable tag: 2.5.7
+Tested up to: 5.9
+Stable tag: 2.6.4
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A Floating Cart for WooCommerce that will improve customer buying experience & encourage them to click the “checkout” button.
+A modern Floating Cart / Side Cart for WooCommerce that will improve customer buying experience and increase conversions.
 
 == Description ==
 
-A Floating Cart for WooCommerce that will improve customer buying experience & encourage them to click the “checkout” button.
+A modern Floating Cart / Side Cart for WooCommerce that will improve customer buying experience and increase conversions.
 
 **What Would More Sales and Higher Conversions be Worth to You?**
 
@@ -103,6 +103,46 @@ Installing "Floating Cart for WooCommerce" can be done by following these steps:
 3. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+#### V.2.6.4 - 12.04.2022
+- **fix**: Cart Menu Item: fix alignment option not being applied on mobile / tablet screens
+- **fix**: [Bug] Safari Scrolling Issue - The cart stops scrolling after making any cart updates
+- **update**: XT Framework update
+
+#### V.2.6.3 - 03.03.2022
+- **new**: **Pro** Shipping methods within Cart Totals / Checkout: Added an option to select between Radio buttons or Dropdowns https://d.pr/i/BsOiBg
+- **new**: **Pro** Added option to hide 3rd party WooCommerce Notices that appear within the Floating Cart (Info & Success notices only) https://d.pr/i/QiAqIh
+- **fix**: Minor css fixes
+- **support**: Support for WooCommerce Minima and Maxima plugin.
+- **fix**: Freemius Security Fix
+- **update**: XT Framework update
+
+#### V.2.6.2 - 05.02.2022
+- **support**: Wrapped the **woocommerce_check_cart_items** action output with the **force_balance_tags()** wp function to make sure the returned html is always valid to avoid 3rd party hooks from messing up the cart display.
+
+#### V.2.6.1 - 02.02.2022
+- **fix**: Fixed missing dependency error with free version.
+
+#### V.2.6.0 - 01.02.2022
+- **new**: Customizer: Visibility options now included within the free version
+- **new**: Customizer: **Body colors** are now **Global colors** and they are now included within the free version. This allows easier global color customizations. You can override some of these colors from other sections.
+- **new**: Added 2 new JS api functions: **xt_woofc_scroll_to_top()** and **xt_woofc_scroll_to_bottom()**
+- **new**: **Pro** Shipping methods within Cart Totals / Checkout form will be displayed in a dropdown instead of multiple radio buttons. **https://d.pr/i/LLK3AW**
+- **new**: **Pro** Major Checkout Form Update. Changed the way the checkout is loaded and will handle checkout validation in a better way. For better compatibility with most themes and third party plugins, the checkout form is now embedded in an iframe. It won't be loaded below the cart list anymore, it will be displayed on its own, once the checkout button is clicked as a 2-step process.
+- **new**: **Pro** New checkout thank you template. /parts/checkout/thank-you.php. This template will be displayed after placing an order using the embedded checkout form. https://d.pr/i/3FEQDN
+- **new**: Apply **woocommerce_check_cart_items** native action to display woocommerce validation errors if any
+- **new**: Added option to override WooCommerce notices colors within the Floating Cart. **https://d.pr/i/6ftu5J**
+- **enhance**: **Pro** Enhanced the display of the shipping address within Cart Totals. Added Location & Edit icons. **https://d.pr/i/LLK3AW**
+- **fix**: When the cart is empty and the trigger is hidden, adding an item to the cart for the first time, the fly to cart animation brings the image way below, before the trigger is even visible. Fixed by showing the trigger before starting the animation.
+- **fix**: Multiple CSS fixes, enhancements
+- **update**: **Pro** Updated template: /parts/cart/coupon-list.php
+- **update**: **Pro** Updated template: /parts/cart/shipping.php
+- **update**: **Pro** Removed deprecated template: /parts/checkout/checkout.php
+- **update**: **Pro** Removed deprecated template: /parts/checkout/checkout-fields.php
+- **update**: Major Code Update / Restructuring
+- **update**: XT Framework update
+- **support**: Better support for FlatSome theme
+- **support**: Support WP v5.9
 
 #### V.2.5.7 - 27.11.2021
 - **fix**: Fixed conflict with PPOM plugin (woocommerce product addons)

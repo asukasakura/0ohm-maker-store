@@ -1,5 +1,4 @@
 <?php
-
 /**
  * The public-facing functionality of the plugin.
  *
@@ -10,20 +9,24 @@
  * @subpackage XT_Woo_Floating_Cart/public
  * @author     XplodedThemes
  */
+
 // If this file is called directly, abort.
-if ( !defined( 'WPINC' ) ) {
+if (!defined('WPINC')) {
     die;
 }
+
 class XT_Woo_Floating_Cart_Public
 {
+
     /**
      * Core class reference.
      *
      * @since    1.0.0
-     * @access   private
+     * @access   protected
      * @var      XT_Woo_Floating_Cart $core
      */
-    private  $core ;
+    protected $core;
+
     /**
      * Var that holds the menu class object.
      *
@@ -31,31 +34,8 @@ class XT_Woo_Floating_Cart_Public
      * @access   public
      * @var      XT_Woo_Floating_Cart_Theme_Fixes $theme_fixes Theme Fixes
      */
-    public  $theme_fixes ;
-    /**
-     * Var that holds the menu class object.
-     *
-     * @since    1.0.0
-     * @access   public
-     * @var      XT_Woo_Floating_Cart_Menu $menu Menu
-     */
-    public  $menu ;
-    /**
-     * Var that holds custom payment buttons
-     *
-     * @since    2.1.2
-     * @access   public
-     * @var      array $payment_buttons buttons
-     */
-    public  $payment_buttons = array() ;
-    /**
-     * Var that holds custom payment buttons enabled count
-     *
-     * @since    2.1.2
-     * @access   public
-     * @var      int $payment_buttons_enabled count
-     */
-    public  $payment_buttons_enabled = 0 ;
+    public $theme_fixes;
+
     /**
      * Initialize the class and set its properties.
      *
@@ -63,186 +43,82 @@ class XT_Woo_Floating_Cart_Public
      *
      * @since    1.0.0
      */
-    public function __construct( $core )
+    public function __construct($core)
     {
+
         $this->core = $core;
-        $this->init_ajax();
-        add_action( 'init', array( $this, 'init' ), 10 );
+
+        new XT_Woo_Floating_Cart_Ajax($this->core);
+        $this->theme_fixes = new XT_Woo_Floating_Cart_Theme_Fixes($this->core);
+
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_styles'));
+        add_action('wp_enqueue_scripts', array($this, 'enqueue_scripts'));
+
+        add_filter('rocket_cache_wc_empty_cart', '__return_false');
+        add_filter('woocommerce_cart_item_price', array($this, 'change_cart_price_display'), 30, 3);
+        add_action('xt_woofc_cart_body_header', array($this, 'render_wc_notices'), 99);
+        add_action('xt_woofc_cart_body_header', array($this, 'after_wc_notices'), 99);
+        add_filter('body_class', array($this, 'body_class') );
+        add_action('wp_footer', array($this, 'render'));
+
     }
-    
-    public function init()
-    {
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
-        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-        add_filter( 'rocket_cache_wc_empty_cart', '__return_false' );
-        add_action( 'xt_woofc_before_cart_list', array( $this, 'before_cart_list' ), 15 );
-        add_filter(
-            'woocommerce_cart_item_price',
-            array( $this, 'change_cart_price_display' ),
-            30,
-            3
-        );
-        add_action( 'template_redirect', array( $this, 'define_woocommerce_constants' ), 10 );
-        add_action( 'wp_footer', array( $this, 'render' ) );
-        $this->init_frontend_dependencies();
-    }
-    
-    // Init  Ajax
-    public function init_ajax()
-    {
-        new XT_Woo_Floating_Cart_Ajax( $this->core );
-    }
-    
-    // Init Frontend Dependencies
-    public function init_frontend_dependencies()
-    {
-        $this->theme_fixes = new XT_Woo_Floating_Cart_Theme_Fixes( $this->core );
-    }
-    
+
     public function enabled()
     {
-        if ( $this->should_not_load() || $this->is_cart_page() || $this->is_checkout_page() ) {
+
+        if ($this->should_not_load() || $this->is_cart_page() || is_checkout()) {
             return false;
         }
-        $exclude_pages = $this->core->customizer()->get_option( 'hidden_on_pages', array() );
-        if ( !empty($exclude_pages) ) {
-            foreach ( $exclude_pages as $page ) {
-                if ( !empty($page) && is_page( $page ) ) {
+
+        $exclude_pages = $this->core->customizer()->get_option('hidden_on_pages', array());
+        if (!empty($exclude_pages)) {
+            foreach ($exclude_pages as $page) {
+                if (!empty($page) && is_page($page)) {
                     return false;
                 }
             }
         }
+
         return true;
     }
-    
-    public function menu_item_enabled()
-    {
-        return $this->core->customizer()->get_option_bool( 'cart_menu_enabled', false );
+
+    function body_class( $classes ) {
+
+        $body_color              = $this->core->customizer()->get_option('cart_body_bg_color', '#ffffff' );
+        $body_is_light           = xtfw_hex_is_light($body_color);
+
+        $classes[] = 'xt_woofc-'.($body_is_light ? 'is-light' : 'is-dark');
+
+        return $classes;
     }
-    
-    public function shortcode_enabled()
-    {
-        return $this->core->customizer()->get_option_bool( 'cart_shortcode_enabled', false );
-    }
-    
-    public function suggested_products_enabled()
-    {
-        $enabled = $this->core->customizer()->get_option_bool( 'suggested_products_enabled', false );
-        $enabled_mobile = $this->core->customizer()->get_option_bool( 'suggested_products_mobile_enabled', false );
-        return $enabled || $enabled_mobile && wp_is_mobile();
-    }
-    
-    public function suggested_products_slider_enabled()
-    {
-        return $this->suggested_products_enabled() && $this->core->customizer()->get_option( 'suggested_products_display_type', 'slider' ) === 'slider';
-    }
-    
-    public function totals_enabled()
-    {
-        return $this->core->customizer()->get_option_bool( 'enable_totals', false );
-    }
-    
-    public function checkout_form_enabled()
-    {
-        return $this->core->customizer()->get_option_bool( 'cart_checkout_form', false );
-    }
-    
-    public function coupon_form_enabled()
-    {
-        return $this->core->customizer()->get_option_bool( 'enable_coupon_form', false );
-    }
-    
-    public function coupon_list_enabled()
-    {
-        return $this->coupon_form_enabled() && $this->core->customizer()->get_option_bool( 'enable_coupon_list', false );
-    }
-    
-    public function is_checkout_page()
-    {
-        $checkout_page_id = wc_get_page_id( 'checkout' );
-        return is_page( $checkout_page_id );
-    }
-    
+
     public function is_cart_page()
     {
-        $cart_page_id = wc_get_page_id( 'cart' );
-        return is_page( $cart_page_id );
+
+        $cart_page_id = wc_get_page_id('cart');
+
+        return is_page($cart_page_id);
     }
-    
+
     public function should_not_load()
     {
+
+        $should_not_load = false;
+
         // skip if Divi or Elementor builder
-        if ( !empty($_GET['et_fb']) || !empty($_GET['elementor-preview']) ) {
-            return true;
+        if (!empty($_GET['et_fb']) || !empty($_GET['elementor-preview'])) {
+            $should_not_load = true;
         }
+
         // skip if within and admin iframe
-        if ( defined( 'IFRAME_REQUEST' ) ) {
-            return true;
+        if(defined('IFRAME_REQUEST')) {
+            $should_not_load = true;
         }
-        return false;
+
+        return apply_filters('xt_woofc_should_not_load', $should_not_load);
     }
-    
-    public function define_woocommerce_constants()
-    {
-        do_action( 'xt_woofc_before_woocommerce_constants' );
-        
-        if ( $this->enabled() && $this->core->access_manager()->can_use_premium_code__premium_only() ) {
-            if ( wp_doing_ajax() && ($this->totals_enabled() || $this->checkout_form_enabled()) ) {
-                $this->define_cart_constant();
-            }
-            if ( $this->checkout_form_enabled() ) {
-                add_filter( 'woocommerce_is_checkout', '__return_true' );
-            }
-        }
-    
-    }
-    
-    public function define_cart_constant()
-    {
-        wc_maybe_define_constant( 'WOOCOMMERCE_CART', true );
-    }
-    
-    public function define_checkout_constant()
-    {
-        wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-    }
-    
-    function total_savings( $tableWrap = false )
-    {
-        $discount_total = WC()->cart->get_cart_discount_total();
-        foreach ( WC()->cart->get_cart() as $cart_item_key => $values ) {
-            $_product = $values['data'];
-            
-            if ( $_product->is_on_sale() ) {
-                $regular_price = $_product->get_regular_price();
-                $sale_price = $_product->get_sale_price();
-                $discount = ($regular_price - $sale_price) * $values['quantity'];
-                $discount_total += $discount;
-            }
-        
-        }
-        
-        if ( $discount_total > 0 ) {
-            if ( $tableWrap ) {
-                echo  '
-		        <div class="woocommerce-checkout-review-order xt_woofc-cart-totals">
-                    <table cellspacing="0" class="shop_table shop_table_responsive">' ;
-            }
-            echo  '
-			<tr class="xt_woofc-total-savings">
-			    <th>' . esc_html__( 'Total savings', 'woo-floating-cart' ) . '</th>
-			    <td data-title=" ' . esc_html__( 'Total savings', 'woo-floating-cart' ) . ' ">
-					<strong>' . wc_price( $discount_total ) . '</strong>
-			    </td>
-		    </tr>' ;
-            if ( $tableWrap ) {
-                echo  '</table>
-                </div>' ;
-            }
-        }
-    
-    }
-    
+
+
     /**
      * Register the stylesheets for the public-facing side of the site.
      *
@@ -250,42 +126,24 @@ class XT_Woo_Floating_Cart_Public
      */
     public function enqueue_styles()
     {
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in XT_Woo_Floating_Cart_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The XT_Woo_Floating_Cart_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
-        
-        if ( $this->menu_item_enabled() || $this->shortcode_enabled() ) {
-            wp_enqueue_style(
-                'xt-woo-custom',
-                $this->core->plugin_url( 'public/assets/css', 'woo-custom.css' ),
-                array(),
-                $this->core->plugin_version(),
-                'all'
-            );
-            wp_enqueue_style( 'xt-icons' );
-        }
-        
-        if ( !$this->enabled() ) {
+
+        if (!$this->enabled()) {
             return;
         }
+
+        wp_enqueue_style('xt-icons');
+
         wp_register_style(
             $this->core->plugin_slug(),
-            $this->core->plugin_url( 'public/assets/css', 'frontend.css' ),
+            $this->core->plugin_url('public/assets/css', 'frontend.css'),
             array(),
-            filemtime( $this->core->plugin_path( 'public/assets/css', 'frontend.css' ) ),
+            $this->core->plugin_version(),
             'all'
         );
-        wp_enqueue_style( $this->core->plugin_slug() );
+        wp_enqueue_style($this->core->plugin_slug());
+
     }
-    
+
     /**
      * Register the JavaScript for the public-facing side of the site.
      *
@@ -293,281 +151,159 @@ class XT_Woo_Floating_Cart_Public
      */
     public function enqueue_scripts()
     {
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in XT_Woo_Floating_Cart_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The XT_Woo_Floating_Cart_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
-        if ( !$this->enabled() && !$this->menu_item_enabled() && !$this->shortcode_enabled() ) {
-            return;
+
+        if ($this->core->customizer()->get_option_bool('active_cart_body_lock_scroll', false)) {
+            wp_enqueue_script('xt-body-scroll-lock', $this->core->plugin_url('public') . 'assets/vendors/bodyScrollLock' . XTFW_SCRIPT_SUFFIX . '.js', array(), $this->core->plugin_version(), false);
         }
-        wp_enqueue_script( 'jquery-effects-core' );
-        wp_enqueue_style( 'xt-icons' );
-        if ( $this->core->access_manager()->can_use_premium_code__premium_only() && $this->core->customizer()->get_option_bool( 'flytocart_animation', false ) ) {
-            wp_enqueue_script(
-                'xt-gsap',
-                $this->core->plugin_url( 'public' ) . 'assets/vendors/xt-gsap.min.js',
-                array( 'jquery' ),
-                $this->core->plugin_version(),
-                true
-            );
+
+        if (!$this->is_cart_page()) {
+            wp_dequeue_script('wc-cart');
         }
-        if ( $this->core->customizer()->get_option_bool( 'active_cart_body_lock_scroll', false ) ) {
-            wp_enqueue_script(
-                'xt-body-scroll-lock',
-                $this->core->plugin_url( 'public' ) . 'assets/vendors/bodyScrollLock' . XTFW_SCRIPT_SUFFIX . '.js',
-                array(),
-                $this->core->plugin_version(),
-                false
-            );
-        }
-        
-        if ( $this->suggested_products_slider_enabled() ) {
-            wp_enqueue_script(
-                'xt-lightslider',
-                $this->core->plugin_url( 'public/assets/vendors/lightslider/js', 'lightslider' . XTFW_SCRIPT_SUFFIX . '.js' ),
-                array( 'jquery' ),
-                $this->core->plugin_version(),
-                false
-            );
-            wp_enqueue_style(
-                'xt-lightslider',
-                $this->core->plugin_url( 'public/assets/vendors/lightslider/css', 'lightslider.css' ),
-                array(),
-                $this->core->plugin_version(),
-                'all'
-            );
-        }
-        
-        if ( !$this->is_cart_page() ) {
-            wp_dequeue_script( 'wc-cart' );
-        }
+
         // MAIN SCRIPT
         wp_register_script(
             $this->core->plugin_slug(),
-            $this->core->plugin_url( 'public/assets/js', 'frontend' . XTFW_SCRIPT_SUFFIX . '.js' ),
+            $this->core->plugin_url('public/assets/js', 'frontend' . XTFW_SCRIPT_SUFFIX . '.js'),
             array(
-            'jquery',
-            'wc-cart-fragments',
-            'xt-jquery-touch',
-            'xt-jquery-ajaxqueue',
-            'xt-observers-polyfill'
-        ),
-            filemtime( $this->core->plugin_path( 'public/assets/js', 'frontend' . XTFW_SCRIPT_SUFFIX . '.js' ) ),
+                'jquery',
+                'wc-cart-fragments',
+                'xt-jquery-touch',
+                'xt-jquery-ajaxqueue',
+                'xt-observers-polyfill'
+            ),
+            $this->core->plugin_version(),
             true
         );
-        wp_localize_script( $this->core->plugin_slug(), 'XT_WOOFC', $this->get_script_vars() );
-        wp_enqueue_script( $this->core->plugin_slug() );
-        if ( is_customize_preview() ) {
-            wp_add_inline_script( $this->core->plugin_slug(), '
 
-                var disableClickSelectors = [".xt_woofc-remove-coupon"];
+        wp_localize_script($this->core->plugin_slug(), 'XT_WOOFC', apply_filters('xt_woofc_script_vars', $this->get_script_vars()));
 
-				if(XT_WOOFC.cart_menu_enabled === "1" && XT_WOOFC.cart_menu_click_action === "toggle") {
-					disableClickSelectors.push(".xt_woofc-menu-link");
-				}
 
-				if(XT_WOOFC.cart_shortcode_enabled === "1" && XT_WOOFC.cart_shortcode_click_action === "toggle") {
-					disableClickSelectors.push(".xt_woofc-shortcode-link");
-				}
-
-                disableClickSelectors = disableClickSelectors.join(",");
-
-                jQuery(document).on("mouseenter", disableClickSelectors, function() {
-
-                    jQuery(this).attr("data-href", jQuery(this).attr("href")).attr("href", "#");
-
-                }).on("mouseleave", disableClickSelectors, function() {
-
-                    jQuery(this).attr("href", jQuery(this).attr("data-href"));
-                });
-            ' );
+        if (!$this->enabled()) {
+            return;
         }
+
+        wp_enqueue_script($this->core->plugin_slug());
     }
-    
+
     /**
      * @return array
      */
     public function get_script_vars()
     {
+
         return array(
-            'is_customize_preview'        => is_customize_preview(),
-            'wc_ajax_url'                 => $this->core->wc_ajax()->get_ajax_url(),
-            'layouts'                     => $this->core->customizer()->breakpointsJson(),
-            'can_use_premium_code'        => $this->core->access_manager()->can_use_premium_code__premium_only(),
-            'can_checkout'                => xt_woofc_can_checkout(),
-            'body_lock_scroll'            => $this->core->customizer()->get_option_bool( 'active_cart_body_lock_scroll', false ),
-            'sp_slider_enabled'           => $this->suggested_products_slider_enabled(),
-            'sp_slider_arrow'             => $this->core->customizer()->get_option( 'suggested_products_arrow', 'xt_wooqvicon-arrows-18' ),
-            'cart_autoheight'             => xt_woofc_option_bool( 'cart_autoheight_enabled', false ),
-            'cart_menu_enabled'           => $this->menu_item_enabled(),
-            'cart_menu_click_action'      => xt_woofc_option( 'cart_menu_click_action', 'toggle' ),
-            'cart_shortcode_enabled'      => $this->shortcode_enabled(),
-            'cart_shortcode_click_action' => xt_woofc_option( 'cart_shortcode_click_action', 'toggle' ),
-            'trigger_selectors'           => XT_Framework_Customizer_Helpers::repeater_fields_string_to_array( xt_woofc_option( 'trigger_extra_selectors', array() ) ),
-            'cart_shipping_bar_enabled'   => $this->core->customizer()->get_option_bool( 'cart_shipping_bar_enabled', false ),
-            'lang'                        => array(
-            'wait'              => esc_html__( 'Please wait', 'woo-floating-cart' ),
-            'loading'           => esc_html__( 'Loading', 'woo-floating-cart' ),
-            'min_qty_required'  => esc_html__( 'Min quantity required', 'woo-floating-cart' ),
-            'max_stock_reached' => esc_html__( 'Stock limit reached', 'woo-floating-cart' ),
-            'coupons'           => esc_html__( 'Coupons', 'woo-floating-cart' ),
-            'title'             => esc_html__( 'Cart', 'woo-floating-cart' ),
-            'clear_confirm'     => sprintf( esc_html__( 'Want to clear the cart? %s', 'woo-floating-cart' ), '<a href="#" class="xt_woofc-header-clear-confirm">' . esc_html__( 'Yes', 'woo-floating-cart' ) . '</a>&nbsp; | &nbsp;<a href="#" class="xt_woofc-header-clear-cancel">' . esc_html__( 'No', 'woo-floating-cart' ) . '</a>' ),
-        ),
+            'home_url' => home_url(),
+            'is_customize_preview' => is_customize_preview(),
+            'wc_ajax_url' => $this->core->wc_ajax()->get_ajax_url(),
+            'layouts' => $this->core->customizer()->breakpointsJson(),
+            'body_lock_scroll' => $this->core->customizer()->get_option_bool('active_cart_body_lock_scroll', false),
+            'lang' => array(
+                'loading' => esc_html__('Loading', 'woo-floating-cart'),
+                'min_qty_required' => esc_html__('Min quantity required', 'woo-floating-cart'),
+                'max_stock_reached' => esc_html__('Stock limit reached', 'woo-floating-cart'),
+                'title' => esc_html__('Cart', 'woo-floating-cart'),
+                'checkout' => xt_woofc_checkout_label(),
+                'wait' => xt_woofc_checkout_processing_label()
+            )
         );
     }
-    
-    public function before_cart_list()
-    {
-        if ( $this->checkout_form_enabled() ) {
-            echo  '<div class="woocommerce-cart xt_woofc-hide"></div>' ;
-        }
-    }
-    
-    public function do_woocommerce_after_cart_item_name( $cart_item, $cart_item_key )
-    {
-        // After Cart Item Name Hook
-        do_action( 'woocommerce_after_cart_item_name', $cart_item, $cart_item_key );
-    }
-    
-    public function change_cart_price_display( $price, $values, $cart_item_key )
+
+    public function change_cart_price_display($price, $values, $cart_item_key)
     {
         $slashed_price = $values['data']->get_price_html();
         $is_on_sale = $values['data']->is_on_sale();
-        if ( $is_on_sale ) {
+        if ($is_on_sale) {
             $price = $slashed_price;
         }
         return $price;
     }
-    
-    public function get_product_image_data( $product )
+
+    public function get_product_image_data($product)
     {
+
         $image_id = $product->get_image_id();
-        return wp_get_attachment_image_src( $image_id, 'woocommerce_thumbnail', 0 );
+
+        return wp_get_attachment_image_src($image_id, 'woocommerce_thumbnail', 0);
     }
-    
-    public function get_coupons()
-    {
-        $cache_key = 'xt_woofc_coupons';
-        $coupons = wp_cache_get( $cache_key );
-        
-        if ( false === $coupons ) {
-            $showCouponList = $this->coupon_list_enabled();
-            if ( !$showCouponList ) {
-                return array();
-            }
-            $couponListType = $this->core->customizer()->get_option( 'coupon_list_type', 'all' );
-            $totalCoupons = intval( $this->core->customizer()->get_option( 'coupon_list_total', 20 ) );
-            $includes = array();
-            
-            if ( $couponListType === 'selection' ) {
-                $selection = trim( $this->core->customizer()->get_option( 'coupon_list_selection', '' ) );
-                if ( !empty($selection) ) {
-                    $includes = array_map( 'trim', explode( ',', $selection ) );
-                }
-            }
-            
-            $args = array(
-                'posts_per_page' => $totalCoupons,
-                'include'        => $includes,
-                'orderby'        => 'title',
-                'order'          => 'asc',
-                'post_type'      => 'shop_coupon',
-                'post_status'    => 'publish',
-            );
-            $coupons_post = get_posts( $args );
-            if ( empty($coupons_post) ) {
-                return array();
-            }
-            $coupons = array(
-                'valid'   => array(),
-                'invalid' => array(),
-            );
-            $hide_for_error_codes = array(
-                105,
-                //Not exists.
-                107,
-            );
-            $hide_for_error_codes = apply_filters( 'xt_woofc_coupon_hide_invalid_codes', $hide_for_error_codes );
-            $applied_coupons = WC()->cart->get_applied_coupons();
-            foreach ( $coupons_post as $coupon_post ) {
-                $coupon = new WC_Coupon( $coupon_post->ID );
-                $discounts = new WC_Discounts( WC()->cart );
-                $valid = $discounts->is_coupon_valid( $coupon );
-                $code = $coupon->get_code();
-                if ( in_array( $code, $applied_coupons ) ) {
-                    continue;
-                }
-                $off_amount = $coupon->get_amount();
-                $off_value = ( 'percent' === $coupon->get_discount_type() ? $off_amount . '%' : wc_price( $off_amount ) );
-                $data = array(
-                    'code'      => $code,
-                    'coupon'    => $coupon,
-                    'notice'    => '',
-                    'off_value' => $off_value,
-                );
-                
-                if ( is_wp_error( $valid ) ) {
-                    if ( $couponListType !== 'all' ) {
-                        continue;
+
+    public function render_wc_notices() {
+
+        $notices = force_balance_tags(xtfw_ob_get_clean(function() {
+            do_action('woocommerce_check_cart_items');
+            do_action('xt_woofc_set_notices');
+            wc_print_notices();
+        }));
+
+        $this->core->frontend()->deduplicate_notices();
+        ?>
+        <div class="xt_woofc-wc-notices">
+            <?php echo $notices;?>
+        </div>
+        <?php
+    }
+
+    public function after_wc_notices() {
+
+        echo force_balance_tags(xtfw_ob_get_clean(function() {
+            do_action('xt_woofc_after_notices');
+        }));
+    }
+
+    public function deduplicate_notices() {
+
+        $all_notices  = WC()->session->get( 'wc_notices', array() );
+        $notice_types = array( 'error' );
+
+        $exists = [];
+        $duplicates = 0;
+        foreach ( $notice_types as $notice_type ) {
+            if (wc_notice_count($notice_type) > 0) {
+
+                foreach ($all_notices[$notice_type] as $key => $notice) {
+                    $message = isset($notice['notice']) ? $notice['notice'] : $notice;
+                    if(in_array($message, $exists)) {
+                        unset($all_notices[$notice_type][$key]);
+                        $duplicates++;
+                    }else{
+                        $exists[] = $message;
                     }
-                    $error_code = $valid->get_error_code();
-                    if ( in_array( $error_code, $hide_for_error_codes ) ) {
-                        continue;
-                    }
-                    $data['notice'] = $valid->get_error_message();
                 }
-                
-                $coupons[( is_wp_error( $valid ) ? 'invalid' : 'valid' )][] = $data;
             }
-            wp_cache_set( $cache_key, $coupons );
         }
-        
-        return apply_filters( 'xt_woofc_coupons_list', $coupons );
+
+        if($duplicates > 0) {
+            WC()->session->set('wc_notices', $all_notices);
+        }
     }
-    
+
+    public function define_cart_constant()
+    {
+        wc_maybe_define_constant('WOOCOMMERCE_CART', true);
+    }
+
     public function render()
     {
-        if ( !$this->enabled() ) {
+
+        if (!$this->enabled()) {
             return false;
         }
-        ?>
-        <div id="xt_woofc" class="<?php 
-        echo  esc_attr( xt_woofc_class() ) ;
-        ?>" <?php 
-        xt_woofc_attributes();
-        ?>>
 
-            <?php 
-        // for some reason, woocommerce-product-addon plugin does not work when this is added.
-        if ( !function_exists( 'PPOM' ) ) {
-            ?>
+        ?>
+        <div id="xt_woofc" class="<?php echo esc_attr(xt_woofc_class()); ?>" <?php xt_woofc_attributes(); ?>>
+
+            <?php
+            // for some reason, woocommerce-product-addon plugin does not work when this is added.
+            if(!function_exists('PPOM')): ?>
             <form class="cart xt_woofc-hide"></form>
-            <?php 
-        }
-        ?>
+            <?php endif; ?>
 
-            <?php 
-        do_action( 'xt_woofc_before_cart' );
-        ?>
+            <?php do_action('xt_woofc_before_cart'); ?>
 
-            <?php 
-        $this->core->get_template( 'parts/cart' );
-        ?>
+            <?php $this->core->get_template('parts/cart'); ?>
 
-            <?php 
-        do_action( 'xt_woofc_after_cart' );
-        ?>
+            <?php do_action('xt_woofc_after_cart'); ?>
 
         </div>
-        <?php 
+        <?php
     }
-
 }

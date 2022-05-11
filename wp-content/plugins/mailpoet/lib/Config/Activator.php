@@ -22,14 +22,19 @@ class Activator {
   /** @var WPFunctions */
   private $wp;
 
+  /** @var Migrator */
+  private $migrator;
+
   public function __construct(
     SettingsController $settings,
     Populator $populator,
-    WPFunctions $wp
+    WPFunctions $wp,
+    Migrator $migrator
   ) {
     $this->settings = $settings;
     $this->populator = $populator;
     $this->wp = $wp;
+    $this->migrator = $migrator;
   }
 
   public function activate() {
@@ -47,19 +52,20 @@ class Activator {
   }
 
   private function processActivate(): void {
-    $migrator = new Migrator();
-    $migrator->up();
+    $this->migrator->up();
 
     $this->populator->up();
     $this->updateDbVersion();
 
     $caps = new Capabilities();
     $caps->setupWPCapabilities();
+
+    $localizer = new Localizer();
+    $localizer->forceInstallLanguagePacks($this->wp);
   }
 
   public function deactivate() {
-    $migrator = new Migrator();
-    $migrator->down();
+    $this->migrator->down();
 
     $caps = new Capabilities();
     $caps->removeWPCapabilities();

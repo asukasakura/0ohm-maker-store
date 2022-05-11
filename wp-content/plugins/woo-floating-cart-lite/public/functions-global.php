@@ -6,6 +6,9 @@
 function xt_woofc_class()
 {
     $classes = array( 'xt_woofc', 'woocommerce' );
+    $override_woo_notices = xt_woofc_option_bool( 'override_woo_notices', false );
+    $woo_success_hide = xt_woofc_option_bool( 'woo_success_notice_hide', false );
+    $woo_info_hide = xt_woofc_option_bool( 'woo_info_notice_hide', false );
     $trigger_hidden = xt_woofc_option_bool( 'trigger_hidden', false );
     $modal_mode = xt_woofc_option( 'modal_mode', 'morph' );
     $animation_type = ( !$modal_mode ? xt_woofc_option( 'animation_type', 'morph' ) : 'morph' );
@@ -17,16 +20,18 @@ function xt_woofc_class()
     $counter_tablet_position = xt_woofc_option( 'counter_position_tablet', 'top-left' );
     $counter_mobile_position = xt_woofc_option( 'counter_position_mobile', 'top-left' );
     $visibility = xt_woofc_option( 'visibility', 'show-on-all' );
-    $keep_visible_on_empty = xt_woofc_option_bool( 'visible_on_empty', false );
-    $hide_thumbs = xt_woofc_option( 'cart_product_hide_thumb', 'show-thumbs' );
-    $squared_thumb = xt_woofc_option_bool( 'cart_product_squared_thumb', true );
-    $enable_coupon_form = xt_woofc_option_bool( 'enable_coupon_form', false );
-    $enable_coupon_list = $enable_coupon_form && xt_woofc_option_bool( 'enable_coupon_list', false );
-    $enable_totals = xt_woofc_option_bool( 'enable_totals', false );
-    $actions_icons_enabled = xt_woofc_option_bool( 'cart_product_delete_icon_enabled', false );
-    $body_color = xt_woofc_option( 'cart_body_bg_color', '#ffffff' );
-    $body_is_light = xtfw_hex_is_light( $body_color );
-    $classes[] = 'xt_woofc-' . (( $body_is_light ? 'is-light' : 'is-dark' ));
+    if ( $override_woo_notices ) {
+        $classes[] = 'xt_woofc-override-woo-notices';
+    }
+    if ( $woo_success_hide ) {
+        $classes[] = 'xt_woofc-success-notice-hide';
+    }
+    if ( $woo_info_hide ) {
+        $classes[] = 'xt_woofc-info-notice-hide';
+    }
+    if ( $trigger_hidden ) {
+        $classes[] = 'xt_woofc-hide-trigger';
+    }
     if ( !empty($animation_type) ) {
         $classes[] = 'xt_woofc-animation-' . $animation_type;
     }
@@ -66,21 +71,14 @@ function xt_woofc_class()
  */
 function xt_woofc_attributes()
 {
-    $modal_mode = xt_woofc_option( 'modal_mode', 'morph' );
     $attributes = array(
-        'data-ajax-init'        => xt_woofc_option_bool( 'ajax_init', false ),
-        'data-animation'        => ( !$modal_mode ? xt_woofc_option( 'animation_type', 'morph' ) : 'morph' ),
-        'data-express-checkout' => xt_woofc_option_bool( 'cart_checkout_form', false ),
-        'data-position'         => xt_woofc_option( 'position', 'bottom-right' ),
-        'data-tablet-position'  => xt_woofc_option( 'position_tablet', 'bottom-right' ),
-        'data-mobile-position'  => xt_woofc_option( 'position_mobile', 'bottom-right' ),
-        'data-trigger-event'    => xt_woofc_option( 'trigger_event_type', 'vclick' ),
-        'data-hoverdelay'       => xt_woofc_option( 'trigger_hover_delay', 0 ),
-        'data-flytocart'        => xt_woofc_option_bool( 'flytocart_animation', false ),
-        'data-flyduration'      => xt_woofc_option( 'flytocart_animation_duration', '650' ),
-        'data-shaketrigger'     => xt_woofc_option( 'shake_trigger', 'vertical' ),
-        'data-opencart-onadd'   => xt_woofc_option_bool( 'open_cart_on_product_add', false ),
-        'data-loadingtimeout'   => xt_woofc_option( 'loading_timeout', 100 ),
+        'data-ajax-init'       => xt_woofc_option_bool( 'ajax_init', false ),
+        'data-position'        => xt_woofc_option( 'position', 'bottom-right' ),
+        'data-tablet-position' => xt_woofc_option( 'position_tablet', 'bottom-right' ),
+        'data-mobile-position' => xt_woofc_option( 'position_mobile', 'bottom-right' ),
+        'data-trigger-event'   => xt_woofc_option( 'trigger_event_type', 'vclick' ),
+        'data-hoverdelay'      => xt_woofc_option( 'trigger_hover_delay', 0 ),
+        'data-loadingtimeout'  => xt_woofc_option( 'loading_timeout', 100 ),
     );
     $attributes = apply_filters( 'xt_woofc_container_attributes', $attributes );
     foreach ( $attributes as $key => $value ) {
@@ -314,38 +312,18 @@ function xt_woofc_spinner_html( $return = false, $wrapSpinner = true )
 }
 
 /**
- * @return bool
- */
-function xt_woofc_can_checkout()
-{
-    return !(!WC()->checkout->is_registration_enabled() && WC()->checkout->is_registration_required() && !is_user_logged_in());
-}
-
-/**
  * @return mixed|void
  */
 function xt_woofc_checkout_link()
 {
+    $checkout_link_type = xt_woofc_option( 'cart_checkout_link', 'checkout' );
     
-    if ( xt_woofc_option_bool( 'cart_checkout_form', false ) ) {
+    if ( $checkout_link_type == 'checkout' ) {
         $link = wc_get_checkout_url();
     } else {
-        $checkout_link_type = xt_woofc_option( 'cart_checkout_link', 'checkout' );
-        
-        if ( $checkout_link_type == 'checkout' ) {
-            $link = wc_get_checkout_url();
-        } else {
-            $link = wc_get_cart_url();
-        }
-    
+        $link = wc_get_cart_url();
     }
     
-    $link = apply_filters_deprecated(
-        'xt_woo_floating_cart_checkout_link',
-        array( $link ),
-        '1.3.2',
-        'xt_woofc_checkout_link'
-    );
     return apply_filters( 'xt_woofc_checkout_link', $link );
 }
 
@@ -354,32 +332,14 @@ function xt_woofc_checkout_link()
  */
 function xt_woofc_checkout_label()
 {
+    $checkout_link_type = xt_woofc_option( 'cart_checkout_link', 'checkout' );
     
-    if ( xt_woofc_option_bool( 'cart_checkout_form', false ) ) {
-        
-        if ( xt_woofc_can_checkout() ) {
-            $label = apply_filters( 'woocommerce_order_button_text', esc_html__( 'Place order', 'woo-floating-cart' ) );
-        } else {
-            $label = esc_html__( 'Checkout', 'woo-floating-cart' );
-        }
-    
+    if ( $checkout_link_type == 'checkout' ) {
+        $label = esc_html__( 'Checkout', 'woo-floating-cart' );
     } else {
-        $checkout_link_type = xt_woofc_option( 'cart_checkout_link', 'checkout' );
-        
-        if ( $checkout_link_type == 'checkout' ) {
-            $label = esc_html__( 'Checkout', 'woo-floating-cart' );
-        } else {
-            $label = esc_html__( 'Cart', 'woo-floating-cart' );
-        }
-    
+        $label = esc_html__( 'Cart', 'woo-floating-cart' );
     }
     
-    $label = apply_filters_deprecated(
-        'xt_woofc_lang_footer_checkout',
-        array( $label ),
-        '1.3.2',
-        'xt_woofc_checkout_label'
-    );
     return apply_filters( 'xt_woofc_checkout_label', $label );
 }
 
@@ -388,11 +348,7 @@ function xt_woofc_checkout_label()
  */
 function xt_woofc_checkout_processing_label()
 {
-    $label = esc_html__( 'Please Wait...', 'woo-floating-cart' );
-    if ( xt_woofc_option_bool( 'cart_checkout_form', false ) && xt_woofc_can_checkout() ) {
-        $label = apply_filters( 'woocommerce_order_button_text', esc_html__( 'Placing Order...', 'woo-floating-cart' ) );
-    }
-    return apply_filters( 'xt_woofc_checkout_processing_label', $label );
+    return esc_html__( 'Please Wait...', 'woo-floating-cart' );
 }
 
 /**
@@ -400,13 +356,11 @@ function xt_woofc_checkout_processing_label()
  */
 function xt_woofc_checkout_total()
 {
-    /* @var $frontend XT_Woo_Floating_Cart_Public */
-    $frontend = xt_woo_floating_cart()->frontend();
     
-    if ( $frontend->totals_enabled() || $frontend->checkout_form_enabled() || $frontend->coupon_form_enabled() ) {
-        return strip_tags( apply_filters( 'xt_woofc_checkout_total', WC()->cart->get_total() ) );
-    } else {
+    if ( apply_filters( 'xt_woofc_checkout_btn_show_subtotal', '__return_true' ) ) {
         return strip_tags( apply_filters( 'xt_woofc_checkout_subtotal', WC()->cart->get_cart_subtotal() ) );
+    } else {
+        return strip_tags( apply_filters( 'xt_woofc_checkout_total', WC()->cart->get_total() ) );
     }
 
 }
@@ -459,21 +413,17 @@ function xt_woofc_item_title( $product, $cart_item, $cart_item_key )
         $cart_item,
         $cart_item_key
     );
+    $product_title = apply_filters(
+        'woocommerce_cart_item_name',
+        $product->get_title(),
+        $cart_item,
+        $cart_item_key
+    );
     
     if ( !$product_permalink ) {
-        return wp_kses_post( apply_filters(
-            'woocommerce_cart_item_name',
-            sprintf( '<span class="xt_woofc-product-title-inner">%s</span>', $product->get_title() ),
-            $cart_item,
-            $cart_item_key
-        ) );
+        return sprintf( '<span class="xt_woofc-product-title-inner">%s</span>', $product_title );
     } else {
-        return wp_kses_post( apply_filters(
-            'woocommerce_cart_item_name',
-            sprintf( '<a class="xt_woofc-product-title-inner" href="%s">%s</a>', esc_url( $product_permalink ), $product->get_title() ),
-            $cart_item,
-            $cart_item_key
-        ) );
+        return sprintf( '<a class="xt_woofc-product-title-inner" href="%s">%s</a>', esc_url( $product_permalink ), $product_title );
     }
 
 }

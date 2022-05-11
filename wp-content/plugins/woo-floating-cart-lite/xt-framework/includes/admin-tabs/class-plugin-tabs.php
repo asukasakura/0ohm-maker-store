@@ -210,18 +210,20 @@ if ( !class_exists( 'XT_Framework_Plugin_Tabs' ) ) {
             }
             
             $this->tabs[] = array(
-                'id'         => 'changelog',
-                'title'      => esc_html__( 'Change Log', 'xt-framework' ),
-                'show_menu'  => false,
-                'hide_title' => true,
-                'icon'       => 'dashicons-media-text',
-                'order'      => 130,
-                'content'    => array(
+                'id'             => 'changelog',
+                'title'          => esc_html__( 'Change Log', 'xt-framework' ),
+                'show_menu'      => false,
+                'hide_title'     => true,
+                'icon'           => 'dashicons-media-text',
+                'order'          => 130,
+                'content'        => array(
                 'title'        => esc_html__( 'Change Log', 'xt-framework' ),
                 'type'         => 'changelog',
                 'show_refresh' => true,
             ),
-                'secondary'  => true,
+                'secondary'      => true,
+                'flashing_badge' => array( $this->core->plugin_migrations(), 'has_unviewed_changelog' ),
+                'callback'       => array( $this->core->plugin_migrations(), 'set_changelog_viewed' ),
             );
             $this->tabs[] = array(
                 'id'         => 'home',

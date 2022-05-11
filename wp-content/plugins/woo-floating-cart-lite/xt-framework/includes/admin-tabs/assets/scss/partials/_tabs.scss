@@ -250,6 +250,7 @@
   }
 
   .nav-tab {
+    position: relative;
     padding: 5px 13px;
     border: 0;
     box-shadow: none !important;
@@ -285,6 +286,29 @@
     .dashicons{
       font-size: 18px;
       line-height: 20px;
+    }
+
+    .nav-tab-flashing-badge {
+      display: block;
+      vertical-align: top;
+      box-sizing: border-box;
+      margin: 1px 0 -1px 2px;
+      padding: 0 5px;
+      min-width: 10px;
+      height: 10px;
+      border-radius: 9px;
+      background-color: #d63638;
+      color: #fff;
+      font-size: 10px;
+      line-height: 1.6;
+      text-align: center;
+      z-index: 26;
+      position:absolute;
+      top:-5px;
+      right:-2px;
+      animation: xtfw-heartbeat .5s infinite alternate;
+      transform-origin: center;
+      opacity:0.7;
     }
   }
 
@@ -432,9 +456,4 @@
       height: 20px;
     }
   }
-}
-
-@keyframes xtfw-fade-in {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
 }

@@ -2,7 +2,8 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Icon, cart } from '@woocommerce/icons';
+import { cart } from '@woocommerce/icons';
+import { Icon } from '@wordpress/icons';
 import { registerExperimentalBlockType } from '@woocommerce/block-settings';
 
 /**
@@ -14,8 +15,12 @@ const settings = {
 	apiVersion: 2,
 	title: __( 'Mini Cart', 'woo-gutenberg-products-block' ),
 	icon: {
-		src: <Icon srcElement={ cart } />,
-		foreground: '#7f54b3',
+		src: (
+			<Icon
+				icon={ cart }
+				className="wc-block-editor-components-block-icon"
+			/>
+		),
 	},
 	category: 'woocommerce',
 	keywords: [ __( 'WooCommerce', 'woo-gutenberg-products-block' ) ],
@@ -32,6 +37,7 @@ const settings = {
 			 * to add color classes and style to the wrapper.
 			 */
 			__experimentalSkipSerialization: true,
+			background: true,
 		},
 		/**
 		 * We need this experimental flag because we don't want to style the

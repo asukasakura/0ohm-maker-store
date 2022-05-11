@@ -4,7 +4,6 @@ declare( strict_types=1 );
 namespace Automattic\WooCommerce\GoogleListingsAndAds\Notes;
 
 use Automattic\WooCommerce\Admin\Notes\Note as NoteEntry;
-use Automattic\WooCommerce\GoogleListingsAndAds\Infrastructure\Service;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -15,7 +14,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * @package Automattic\WooCommerce\GoogleListingsAndAds\Notes
  */
-interface Note extends Service {
+interface Note {
 
 	/**
 	 * Get the note's unique name.

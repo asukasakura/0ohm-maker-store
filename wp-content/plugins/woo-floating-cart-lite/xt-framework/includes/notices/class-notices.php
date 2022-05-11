@@ -44,6 +44,9 @@ if ( ! class_exists( 'XT_Framework_Notices' ) ) {
 		/** @var bool $frontend */
 		private $frontend;
 
+        private static $backend_rendered = array();
+        private static $frontend_rendered = array();
+
 		/** @var bool $woocommerce_notices */
 		private $woocommerce_notices;
 
@@ -206,7 +209,7 @@ if ( ! class_exists( 'XT_Framework_Notices' ) ) {
 		public function add_message( $message, $type = 'info', $classes = array() ) {
 
 		    $unique_id = $this->unique_id($type, $message);
-			$this->messages[ $type ][] = $message;
+			$this->messages[ $type ][$unique_id ] = $message;
 			$this->classes[ $unique_id ] = $classes;
 		}
 
@@ -409,20 +412,18 @@ if ( ! class_exists( 'XT_Framework_Notices' ) ) {
 
 		    if($this->message_count() > 0 && is_admin() && !is_customize_preview()) {
 
-                $rendered = array();
-
                 foreach ($this->get_messages() as $type => $messages) {
 
                     foreach ($messages as $message) {
 
                         $unique_id = $this->unique_id($type, $message);
 
-                        if(empty($rendered[$unique_id] )) {
+                        if(empty(self::$backend_rendered[$unique_id] )) {
 
                             $classes = $this->get_message_classes($unique_id);
                             echo wp_kses_post($this->get_backend_message_output($type, $message, $classes));
 
-                            $rendered[$unique_id] = true;
+                            self::$backend_rendered[$unique_id] = true;
                         }
 
                     }
@@ -453,11 +454,11 @@ if ( ! class_exists( 'XT_Framework_Notices' ) ) {
 
                         $unique_id = $this->unique_id($type, $message);
 
-                        if(empty($rendered[$unique_id] )) {
+                        if(empty(self::$frontend_rendered[$unique_id] )) {
                             $classes = $this->get_message_classes($unique_id);
                             echo wp_kses_post($this->get_frontend_message_output($type, $message, $classes));
 
-                            $rendered[$unique_id] = true;
+                            self::$frontend_rendered[$unique_id] = true;
                         }
 
                     }

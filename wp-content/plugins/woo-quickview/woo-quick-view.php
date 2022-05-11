@@ -3,13 +3,13 @@
  * Plugin Name:   Quick View for WooCommerce
  * Plugin URI:    https://shapedplugin.com/plugin/woocommerce-quick-view-pro/?ref=1
  * Description:   <strong>Quick View for WooCommerce</strong> allows you to add a quick view button in product loop so that visitors to quickly view product information (using AJAX) in a nice modal without opening the product page.
- * Version:       2.0.3
+ * Version:       2.0.4
  * Author:        ShapedPlugin
  * Author URI:    https://shapedplugin.com/
  * Text Domain:   woo-quick-view
  * Domain Path:   /languages
  * WC requires at least: 4.0
- * WC tested up to: 6.1.1
+ * WC tested up to: 6.3.1
  *
  * @package Woo_Quick_View
  */
@@ -48,7 +48,7 @@ if ( ! class_exists( 'SP_Woo_Quick_View' ) && ! class_exists( 'SP_Woo_Quick_View
 		 *
 		 * @var string
 		 */
-		public $version = '2.0.3';
+		public $version = '2.0.4';
 
 		/**
 		 * Router

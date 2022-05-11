@@ -12,6 +12,8 @@ class MailerError {
   const OPERATION_SEND = 'send';
   const OPERATION_AUTHORIZATION = 'authorization';
   const OPERATION_INSUFFICIENT_PRIVILEGES = 'insufficient_privileges';
+  const OPERATION_EMAIL_LIMIT_REACHED = 'email_limit_reached';
+  const OPERATION_PENDING_APPROVAL = 'pending_approval';
 
   const LEVEL_HARD = 'hard';
   const LEVEL_SOFT = 'soft';
@@ -19,6 +21,8 @@ class MailerError {
   const MESSAGE_EMAIL_FORBIDDEN_ACTION = 'Key is valid, but the action is forbidden';
   const MESSAGE_EMAIL_INSUFFICIENT_PRIVILEGES = 'Insufficient privileges';
   const MESSAGE_EMAIL_NOT_AUTHORIZED = 'The email address is not authorized';
+  const MESSAGE_EMAIL_VOLUME_LIMIT_REACHED = 'Email volume limit reached';
+  const MESSAGE_PENDING_APPROVAL = 'Key is valid, but not approved yet; you can send only to authorized email addresses at the moment';
 
   /** @var string */
   private $operation;

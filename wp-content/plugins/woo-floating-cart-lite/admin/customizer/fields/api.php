@@ -62,3 +62,21 @@ $fields[] = array(
     'default' => '<input readonly="readonly" class="xirki-code-input" value="xt_woofc_is_cart_empty()" /> <span class="xt-jsapi" data-function="xt_woofc_is_cart_empty">Test</span>',
     'priority' => 10
 );
+
+$fields[] = array(
+    'id' => 'api_scroll_to_top',
+    'section' => 'api',
+    'type' => 'custom',
+    'label' => esc_html__('Scroll To Top', 'woo-floating-cart'),
+    'default' => '<input readonly="readonly" class="xirki-code-input" value="xt_woofc_scroll_to_top()" /> <span class="xt-jsapi" data-function="xt_woofc_scroll_to_top">Test</span>',
+    'priority' => 10
+);
+
+$fields[] = array(
+    'id' => 'api_scroll_to_bottom',
+    'section' => 'api',
+    'type' => 'custom',
+    'label' => esc_html__('Scroll To Bottom', 'woo-floating-cart'),
+    'default' => '<input readonly="readonly" class="xirki-code-input" value="xt_woofc_scroll_to_bottom()" /> <span class="xt-jsapi" data-function="xt_woofc_scroll_to_bottom">Test</span>',
+    'priority' => 10
+);

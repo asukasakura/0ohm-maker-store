@@ -2,9 +2,9 @@
 Contributors: mercadopago, mercadolivre, claudiosanches, marcelohama
 Tags: ecommerce, mercadopago, woocommerce
 Requires at least: 4.9.10
-Tested up to: 5.8
+Tested up to: 5.9
 Requires PHP: 5.6
-Stable tag: 5.6.1
+Stable tag: 5.7.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -133,6 +133,45 @@ Set up both the plugin and the checkouts you want to activate on your payment av
 Check out our <a href="https://www.mercadopago.com.br/developers/pt/plugins_sdks/plugins/official/woo-commerce/">official documentation</a> for more information on the specific fields to configure.
 
 == Changelog ==
+= v5.7.6 (19/04/2022) =
+* Bug fixes
+- Adjusted IPN notification to recognize discount coupon
+- Added coupon information in order details
+- Changed default value of checkout ticket date_expiration
+
+= v5.7.5 (31/03/2022) =
+* Bug fixes
+- Instance a non-static class to call a method (Fatal error on PHP 8)
+
+= v5.7.4 (25/02/2022) =
+* Bug fixes
+- Changed php constant
+
+= v5.7.3 (16/02/2022) =
+* Bug fixes
+- fixed cho pro excluded payments
+- fixed cho ticket excluded payments
+- validate if has a checkout prod set all to prod
+- fixed mp order screen
+
+= v5.7.2 (14/02/2022) =
+* Bug fixes
+- Using Jquery from wp.ajax
+
+= v5.7.1 (14/02/2022) =
+* Bug fixes
+- Adjusted js and css load of mercado pago pool
+- Repass all active gateways
+
+= v5.7.0 (14/02/2022) =
+* Features
+- Redesign Admin
+- Performance improvements
+- Added research in the Mercado Pago plugin configuration pages
+
+* Bug fixes
+- Adjusted the css of payment ticket images and text
+
 = v5.6.1 (11/01/2022) =
 * Bug fixes
 - Set important to Mercado Pago inputs, to prevent ghost input type

@@ -27,7 +27,8 @@ class XT_Woo_Floating_Cart_Theme_Fixes {
 
 	public $theme_fixes = array(
 		//'theme-name' => array('css', 'js', 'php'),
-		'avada' => array('css', 'php')
+		'avada' => array('css', 'php'),
+        'flatsome' => array('css')
 	);
 
 	/**
@@ -41,11 +42,10 @@ class XT_Woo_Floating_Cart_Theme_Fixes {
 
 		$this->core = $core;
 
-		$this->theme_name = get_template();
+		$this->theme_name = isset($_GET['customize_changeset_uuid']) && !empty($_GET['theme']) ? sanitize_text_field($_GET['theme']) : get_template();
 
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_theme_fixes_assets' ) );
-
-		$this->init_theme_fixes();
+        add_action( 'init', array( $this, 'init_theme_fixes' ) );
 
 	}
 
@@ -58,22 +58,18 @@ class XT_Woo_Floating_Cart_Theme_Fixes {
 	 */
 	public function enqueue_theme_fixes_assets() {
 
-		if ( ! $this->core->frontend()->enabled() ) {
-			return;
-		}
-
 		if ( ! empty( $this->theme_fixes[ $this->theme_name ] ) ) {
 
 			foreach ( $this->theme_fixes[ $this->theme_name ] as $type ) {
 
 				if ( $type == 'css' ) {
 
-					wp_register_style( $this->core->plugin_slug( $this->theme_name ), $this->core->plugin_url( 'public' ) . 'assets/css/' . $this->theme_name . '.css', array( $this->core->plugin_slug() ), $this->core->plugin_version() );
+					wp_register_style( $this->core->plugin_slug( $this->theme_name ), $this->core->plugin_url( 'public' ) . 'assets/css/' . $this->theme_name . '.css', array(), $this->core->plugin_version() );
 					wp_enqueue_style( $this->core->plugin_slug( $this->theme_name ) );
 
 				} else if ( $type == 'js' ) {
 
-					wp_register_script( $this->core->plugin_slug( $this->theme_name ), $this->core->plugin_url( 'public' ) . 'assets/js/' . $this->theme_name . '.js', array( $this->core->plugin_slug() ), $this->core->plugin_version(), true );
+					wp_register_script( $this->core->plugin_slug( $this->theme_name ), $this->core->plugin_url( 'public' ) . 'assets/js/' . $this->theme_name . '.js', array(), $this->core->plugin_version(), true );
 					wp_enqueue_script( $this->core->plugin_slug( $this->theme_name ) );
 				}
 
@@ -90,10 +86,6 @@ class XT_Woo_Floating_Cart_Theme_Fixes {
 	 * @since   1.0.0
 	 */
 	public function init_theme_fixes() {
-
-		if ( ! $this->core->frontend()->enabled() ) {
-			return;
-		}
 
 		if ( ! empty( $this->theme_fixes[ $this->theme_name ] ) ) {
 

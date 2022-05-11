@@ -9,7 +9,7 @@
 
 defined( 'ABSPATH' ) || exit; // Exit if accessed directly.
 
-if(!empty($field['fields'])):
+if(!empty($field['fields'])) {
 	$cols = !empty($field['cols']) ? $field['cols'] : 1;
 	$group_classes = array('forminp', 'forminp-'.sanitize_title( $field['type'] ));
 
@@ -31,4 +31,4 @@ if(!empty($field['fields'])):
         </td>
     </tr>
 <?php
-endif;
+}

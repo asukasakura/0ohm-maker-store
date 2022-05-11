@@ -20,17 +20,16 @@ if ( strstr( $country_setting, ':' ) ) {
 	$state   = '*';
 }
 ?>
-    <tr>
-        <th scope="row" class="titledesc">
-			<?php $this->render_field_label($field); ?>
-        </th>
-        <td class="forminp">
-			<?php $this->render_field_before( $field ); // WPCS: XSS ok. ?>
-            <select name="<?php echo esc_attr( $field['name'] ); ?>" style="<?php echo esc_attr( $field['css'] ); ?>" data-placeholder="<?php esc_attr_e( 'Choose a country&hellip;', 'xt-framework' ); ?>" aria-label="<?php esc_attr_e( 'Country', 'xt-framework' ); ?>" class="wc-enhanced-select">
-				<?php WC()->countries->country_dropdown_options( $country, $state ); ?>
-            </select>
-			<?php $this->render_field_description( $field ); // WPCS: XSS ok. ?>
-			<?php $this->render_field_after( $field ); // WPCS: XSS ok. ?>
-        </td>
-    </tr>
-<?php
+<tr>
+    <th scope="row" class="titledesc">
+        <?php $this->render_field_label($field); ?>
+    </th>
+    <td class="forminp">
+        <?php $this->render_field_before( $field ); // WPCS: XSS ok. ?>
+        <select name="<?php echo esc_attr( $field['name'] ); ?>" style="<?php echo esc_attr( $field['css'] ); ?>" data-placeholder="<?php esc_attr_e( 'Choose a country&hellip;', 'xt-framework' ); ?>" aria-label="<?php esc_attr_e( 'Country', 'xt-framework' ); ?>" class="wc-enhanced-select">
+            <?php WC()->countries->country_dropdown_options( $country, $state ); ?>
+        </select>
+        <?php $this->render_field_description( $field ); // WPCS: XSS ok. ?>
+        <?php $this->render_field_after( $field ); // WPCS: XSS ok. ?>
+    </td>
+</tr>

@@ -194,7 +194,7 @@ class Cart extends AbstractBlock {
 	 * Hydrate the cart block with data from the API.
 	 */
 	protected function hydrate_from_api() {
-		$this->asset_data_registry->hydrate_api_request( '/wc/store/cart' );
+		$this->asset_data_registry->hydrate_api_request( '/wc/store/v1/cart' );
 	}
 
 	/**
@@ -209,7 +209,7 @@ class Cart extends AbstractBlock {
 			'cart-blocks/line-items',
 			'cart-blocks/order-summary',
 			'cart-blocks/order-summary--checkout-blocks/billing-address--checkout-blocks/shipping-address',
-			'cart-blocks/checkout-button-frontend.js',
+			'cart-blocks/checkout-button',
 			'cart-blocks/express-payment',
 		];
 		$chunks = preg_filter( '/$/', '-frontend', $blocks );

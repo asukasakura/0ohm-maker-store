@@ -5,6 +5,7 @@ var xirkiPostMessage = {
         _windows: [window],
         register: function(win) {
             this._windows.push(win);
+            xirkiPostMessage.styleTag.syncStyleTags();
         },
         deregister: function(winName) {
             var index = this._windows.findIndex((win) => win.name === winName);
@@ -12,18 +13,24 @@ var xirkiPostMessage = {
         },
         get: function() {
             return this._windows;
+        },
+        getMain: function () {
+            return window;
         }
     },
 
     stylesheet: {
 
-        _stylesheet: null,
+        _stylesheets: [],
 
         load: function() {
 
-            this._stylesheet = [].slice.call(document.styleSheets).find(function(item) {
+            xirkiPostMessage.windows.get().forEach((win) => {
 
-                return item.ownerNode.id === 'xirki-inline-styles'
+                this._stylesheets.push([].slice.call(win.document.styleSheets).find(function (item) {
+
+                    return item.ownerNode.id === 'xirki-inline-styles'
+                }));
             });
         },
 
@@ -35,34 +42,41 @@ var xirkiPostMessage = {
 
             var rules = [];
 
-            [].slice.call(this._stylesheet.cssRules).forEach(function(rule) {
+            this._stylesheets.forEach((stylesheet) => {
 
-                if(rule.media && mediaQuery && rule.media.mediaText === mediaQuery && rule.cssRules.length) {
+                [].slice.call(stylesheet.cssRules).forEach(function(rule) {
 
-                    return [].slice.call(rule.cssRules).forEach(function(media_rule) {
+                    if(rule.media && mediaQuery && rule.media.mediaText === mediaQuery && rule.cssRules.length) {
 
-                        if(media_rule.selectorText && media_rule.selectorText === selector) {
-                            rules.push(media_rule);
-                        }
-                    });
+                        return [].slice.call(rule.cssRules).forEach(function(media_rule) {
 
-                }else if(rule.selectorText && rule.selectorText === selector) {
-                    rules.push(rule);
-                }
+                            if(media_rule.selectorText && media_rule.selectorText === selector) {
+                                rules.push(media_rule);
+                            }
+                        });
+
+                    }else if(rule.selectorText && rule.selectorText === selector) {
+                        rules.push(rule);
+                    }
+                });
             });
 
             return rules;
         },
 
-        removeColorRule: function(selector, mediaQuery) {
+        removeColorRule: function(output, mediaQuery) {
 
-            var rules = this.getRules(selector, mediaQuery);
+            var rules = this.getRules(output.element, mediaQuery);
 
             if(rules && rules.length) {
                 rules.forEach(function(rule) {
-                    rule.style.color = '';
-                    rule.style.backgroundColor = '';
-                    rule.style.borderColor = '';
+                    if(output.hasOwnProperty('property')) {
+                        rule.style.setProperty(output.property, '');
+                    }else {
+                        rule.style.setProperty('color', '');
+                        rule.style.setProperty('background-color', '');
+                        rule.style.setProperty('border-color', '');
+                    }
                 });
             }
         }
@@ -124,6 +138,20 @@ var xirkiPostMessage = {
             xirkiPostMessage.windows.get().forEach((win) => {
                 win.jQuery(target).text(styles);
             });
+        },
+
+        syncStyleTags: function() {
+
+            var mainWindow = xirkiPostMessage.windows.getMain();
+
+            mainWindow.jQuery('style[id*="xirki-postmessage-"]').each(function() {
+
+                var id = mainWindow.jQuery(this).attr('id').replace('xirki-postmessage-', '');
+                var styles = mainWindow.jQuery(this).text();
+
+                xirkiPostMessage.styleTag.addData( id, styles );
+            });
+
         }
     },
 
@@ -275,7 +303,7 @@ var xirkiPostMessage = {
 
                 mediaQuery = (output.media_query && 'string' === typeof output.media_query && ! _.isEmpty( output.media_query )) ? output.media_query : false;
 
-                xirkiPostMessage.stylesheet.removeColorRule(output.element, mediaQuery);
+                xirkiPostMessage.stylesheet.removeColorRule(output, mediaQuery);
             }
 
             switch ( controlType ) {

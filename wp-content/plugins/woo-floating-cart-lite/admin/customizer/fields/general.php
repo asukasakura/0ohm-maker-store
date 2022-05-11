@@ -29,15 +29,15 @@ $fields[] = array(
     'priority'    => 10,
 );
 $fields[] = array(
-    'id'          => 'loading_spinner',
-    'section'     => 'general',
-    'label'       => esc_html__( 'Cart Loading Spinner', 'woo-floating-cart' ),
-    'type'        => 'radio-buttonset',
-    'input_attrs' => array(
+    'id'              => 'loading_spinner',
+    'section'         => 'general',
+    'label'           => esc_html__( 'Cart Loading Spinner', 'woo-floating-cart' ),
+    'type'            => 'radio-buttonset',
+    'input_attrs'     => array(
     'data-col' => '2',
 ),
-    'priority'    => 10,
-    'choices'     => array(
+    'priority'        => 10,
+    'choices'         => array(
     '0'                 => esc_html__( 'No Spinner', 'woo-floating-cart' ),
     '1-rotating-plane'  => esc_html__( 'Rotating Plane', 'woo-floating-cart' ),
     '2-double-bounce'   => esc_html__( 'Double Bounce', 'woo-floating-cart' ),
@@ -52,8 +52,16 @@ $fields[] = array(
     '11-folding-cube'   => esc_html__( 'Folding Cube', 'woo-floating-cart' ),
     'loading-text'      => esc_html__( 'Boring Loading Text', 'woo-floating-cart' ),
 ),
-    'transport'   => 'postMessage',
-    'default'     => '7-three-bounce',
+    'transport'       => 'postMessage',
+    'partial_refresh' => [
+    'loading_spinner' => [
+    'selector'        => '.xt_woofc-spinner-wrap',
+    'render_callback' => function () {
+    xt_woofc_spinner_html( false, false );
+},
+],
+],
+    'default'         => '7-three-bounce',
 );
 $fields[] = array(
     'id'        => 'loading_spinner_color',
@@ -61,7 +69,7 @@ $fields[] = array(
     'label'     => esc_html__( 'Cart Loading Spinner Color', 'woo-floating-cart' ),
     'type'      => 'color',
     'priority'  => 10,
-    'default'   => '#2c97de',
+    'default'   => '',
     'transport' => 'auto',
     'output'    => array( array(
     'element'  => ':root',
@@ -73,6 +81,9 @@ $fields[] = array(
     'section'   => 'general',
     'label'     => esc_html__( 'Cart Loading Overlay Color', 'woo-floating-cart' ),
     'type'      => 'color',
+    'choices'   => array(
+    'alpha' => true,
+),
     'priority'  => 10,
     'default'   => 'rgba(255,255,255,0.5)',
     'transport' => 'auto',
@@ -84,7 +95,7 @@ $fields[] = array(
 $fields[] = array(
     'id'        => 'loading_timeout',
     'section'   => 'general',
-    'label'     => esc_html__( 'Cart Loading Spinner Extra Delay', 'woo-floating-cart' ),
+    'label'     => esc_html__( 'Cart Loading Extended Duration', 'woo-floating-cart' ),
     'type'      => 'slider',
     'choices'   => array(
     'min'    => '0',

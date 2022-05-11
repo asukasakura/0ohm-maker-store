@@ -1,12 +1,12 @@
-
 html,body{
   height:1000%;
 }
-
 html div,body div{
   height:1000%;
 }
-
+#customize-controls .wp-full-overlay-sidebar-content{
+  overflow: hidden!important;
+}
 #customize-theme-controls .customize-pane-child.accordion-section-content{
   padding:0;
 }
@@ -16,7 +16,6 @@ html div,body div{
 #customize-footer-actions{
   display:none;
 }
-
 .customize-control:not(.customize-control-xirki-custom) {
   opacity: 0.7;
 

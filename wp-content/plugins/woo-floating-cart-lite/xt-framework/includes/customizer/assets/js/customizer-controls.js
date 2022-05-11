@@ -9,6 +9,11 @@
         return api.previewer.targetWindow();
     };
 
+    var windowObjectReady = function() {
+
+        return windowObject() && windowObject().hasOwnProperty('jQuery');
+    };
+
     api.bind("ready", function() {
 
         function getSectionResponsiveFields(section) {
@@ -58,17 +63,17 @@
 
         // Disable transitions while using Xirki slider, or radio buttons
         $(document.body).on('mouseenter', '.customize-control-xirki-slider, .customize-control-xirki-radio, .customize-control-xirki-radio-buttonset', function() {
-            if(windowObject()) {
+            if(windowObjectReady()) {
                 windowObject().jQuery('html').addClass('xtfw-no-transitions');
             }
         });
         $(document.body).on('mouseleave', '.customize-control-xirki-slider, .customize-control-xirki-radio, customize-control-xirki-radio-buttonset', function() {
-            if(windowObject()) {
+            if(windowObjectReady()) {
                 windowObject().jQuery('html').removeClass('xtfw-no-transitions');
             }
         });
-        $(document.body).on('mouseenter', '#customize-preview', function() {
-            if(windowObject()) {
+        $(document.body).on('mouseenter xtfw_customizer_xt_woofc_changed', '#customize-preview', function() {
+            if(windowObjectReady()) {
                 windowObject().jQuery('html').removeClass('xtfw-no-transitions');
             }
         });
@@ -82,7 +87,7 @@
             var $parent = $this.parent();
             var func = $this.data('function');
 
-            if(windowObject() && windowObject().hasOwnProperty(func)) {
+            if(windowObjectReady() && windowObject().hasOwnProperty(func)) {
 
                 var result = windowObject()[func]();
                 result = JSON.stringify(result);
@@ -112,7 +117,7 @@
         // Trigger event on setting change
         api.bind('change', function (setting) {
 
-            if(windowObject() && setting.id) {
+            if(windowObjectReady() && setting.id) {
 
                 var setting_match = setting.id.match(/\[(.+?)\]/);
                 if(setting_match && setting_match[1]) {
@@ -122,8 +127,11 @@
 
                     var setting_value = setting.get();
 
-                    windowObject().jQuery(windowObject().document.body).trigger('xtfw_customizer_' + config_id + '_changed', [setting_id, setting_value]);
-                    windowObject().jQuery(windowObject().document.body).trigger('xtfw_customizer_changed', [config_id, setting_id, setting_value]);
+                    setTimeout(function() {
+                        windowObject().jQuery(windowObject().document.body).trigger('xtfw_customizer_' + config_id + '_changed', [setting_id, setting_value]);
+                        windowObject().jQuery(windowObject().document.body).trigger('xtfw_customizer_changed', [config_id, setting_id, setting_value]);
+                    }, 100);
+
                 }
             }
         });
@@ -131,7 +139,7 @@
         // Trigger event on save
         api.bind('saved', function () {
 
-            if(windowObject()) {
+            if(windowObjectReady()) {
                 windowObject().jQuery(windowObject().document.body).trigger('xtfw_customizer_saved');
             }
         });

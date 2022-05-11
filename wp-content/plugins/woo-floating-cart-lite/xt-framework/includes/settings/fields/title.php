@@ -45,4 +45,3 @@ $args = !empty($preview['args']) ? $preview['args'] : array();
             do_action( $this->core->plugin_prefix('settings_') . sanitize_title( $field['id'] ) );
         }
         ?>
-

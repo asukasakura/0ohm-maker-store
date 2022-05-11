@@ -4,7 +4,8 @@
 import { __ } from '@wordpress/i18n';
 import classnames from 'classnames';
 import { InnerBlocks } from '@wordpress/block-editor';
-import { Icon, cart } from '@woocommerce/icons';
+import { cart } from '@woocommerce/icons';
+import { Icon } from '@wordpress/icons';
 import { registerFeaturePluginBlockType } from '@woocommerce/block-settings';
 import { createBlock } from '@wordpress/blocks';
 /**
@@ -21,14 +22,18 @@ import './inner-blocks';
 const settings = {
 	title: __( 'Cart', 'woocommerce' ),
 	icon: {
-		src: <Icon srcElement={ cart } />,
-		foreground: '#7f54b3',
+		src: (
+			<Icon
+				icon={ cart }
+				className="wc-block-editor-components-block-icon"
+			/>
+		),
 	},
 	category: 'woocommerce',
 	keywords: [ __( 'WooCommerce', 'woocommerce' ) ],
 	description: __( 'Shopping cart.', 'woocommerce' ),
 	supports: {
-		align: [ 'wide', 'full' ],
+		align: [ 'wide' ],
 		html: false,
 		multiple: false,
 		__experimentalExposeControlsToChildren: true,
